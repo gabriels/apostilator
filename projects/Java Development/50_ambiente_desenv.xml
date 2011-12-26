@@ -1,0 +1,416 @@
+<capitulo>Ambiente de Desenvolvimento J2EE</capitulo>
+
+	O ambiente de desenvolvimento é formado por um conjunto de programas
+disponíveis através de licenças livres, que permitem o desenvolvimento de
+sistemas através de tecnologias J2EE e ferramentas que aumentam a
+produtividade.
+
+<lista>
+	<item/> Eclipse Indigo SR1 v3.7.1;
+	<item/> Maven Intergration for Web Tools Platform;
+	<item/> JbossTools v3.3.0-M4;
+	<item/> Jboss AS v6.1.0 Final;
+	<item/> Demoiselle 2.2.0 (Maven archetypes; JARs;);
+</lista>
+
+<subsecao>Eclipse</subsecao>
+
+	Os procedimentos indicados neste capítulo centralizam a instalação do
+conjunto de programas que formam o ambiente de desenvolvimento no diretório
+<i>/opt/eclipse</i>, possibilitando a replicação deste ambiente de forma ágil,
+podendo-se copiar este diretório para outra estação de trabalho.
+
+	É requisito mínimo a existência de <b>2Gb de memória RAM</b>.
+
+<subsubsecao>Download</subsubsecao>
+
+	O <i>Eclipse IDE for Java Developers</i> esta disponível em
+<i>www.eclipse.org</i>, cuja versão atual é:
+
+
+	<i><b>eclipse-java-indigo-SR1-linux-gtk.tar.gz</b></i>
+
+<figura>
+    <tamanhob>0.7</tamanhob>
+    <arquivob>imgs/eclipse_download_01</arquivob>
+    <legenda>Eclipse download - www.eclipse.org/downloads</legenda>
+    <nome>fig:eclipse-download-1</nome>
+</figura>
+
+<subsubsecao>Instalação</subsubsecao>
+
+	Os procedimentos para instalação são indicados a seguir:
+
+<comando>
+$ cd /opt
+$ tar xzf /path/to/eclipse-java-indigo-SR1-linux-gtk.tar.gz
+$ chown -R johndoe: eclipse
+</comando>
+
+	Substitua o termo <i>johndoe</i> pelo usuário que executará o eclipse.
+Isto é necessário neste momento para que o Eclipse tenham permissão para
+instalar os programas adicionais no diretório <i>/opt/eclipse</i>.
+
+<subsubsecao>Pós-instalação</subsubsecao>
+
+	O procedimento para a configuração de maior uso memória e consequente
+melhora no desempenho do Eclipse, é indicado a seguir:
+
+<lista>
+<item/> <b>/opt/eclipse/eclipse.ini</b>: incremente os parâmetros indicados.
+</lista>
+
+<comando>
+-Xms512m
+-Xmx1024m
+</comando>
+
+	É necessário a execução do Eclipse para proceder a instalação dos demais
+programas, para isto inicialize o <i>eclipse</i> através do executável
+<b>/opt/eclipse/eclipse</b>, e selecione o diretório
+(<b>/opt/eclipse/ workset/workspace</b>) onde os projetos serão armazenados
+(<i>workspace</i>).
+
+<figura>
+    <tamanhob>0.9</tamanhob>
+    <arquivob>imgs/eclipse_config_workspace_01</arquivob>
+    <legenda>Definindo workspace: <b>/opt/eclipse/workset/workspace</b></legenda>
+    <nome>fig:eclipse-config-workspace-1</nome>
+</figura>
+
+<quebraPagina/>
+
+<subsecao>Maven Integration for WTP</subsecao>
+
+	O suporte ao Apache Maven é fornecido ao Eclipse através do componente
+<i>Maven Integration for WTP</i> (m2e-wtp).
+
+<subsubsecao>Instalação</subsubsecao>
+
+	A instalação é realizada através do Eclipse, como indicado:
+
+<lista>
+<item/> acesse o menu: <b>Help</b> => <b>Eclipse Marketplace...</b>;
+<item/> digite o termo <b>maven</b> para a pesquisa;
+<item/> clique em <b>Go</b>;
+<item/> identifique o item <b>Maven Integration for Eclipse WTP</b> e clique em <b>Install</b>;
+</lista>
+
+<figura>
+    <tamanhob>1.0</tamanhob>
+    <arquivob>imgs/maven_install_01</arquivob>
+    <legenda>Instalação do Maven (m2e-wtp)</legenda>
+    <nome>fig:maven-install-1</nome>
+</figura>
+
+	Na nova janela, realize os seguintes procedimentos:
+
+<lista>
+<item/> identifique os items selecionados;
+<item/> clique em <b>Next</b>;
+<item/> verifique os termos da licença de uso e caso concorde, selecione:
+<b>I accept the terms of the license agreements</b>;
+<item/> clique em <b>Finish</b>;
+<item/> Aguarde o download, o acesso pode ser lento e este processo pode
+demorar;
+</lista>
+
+<figura>
+    <tamanhob>1.0</tamanhob>
+    <arquivob>imgs/maven_install_02</arquivob>
+    <legenda>Instalação do Maven (m2e-wtp)</legenda>
+    <nome>fig:maven-install-2</nome>
+</figura>
+
+<subsubsecao>Pós-instalação</subsubsecao>
+
+	O procedimento a seguir tem objetivo de alterar o diretório do repositório
+local do Maven de <i>~/.m2</i> para <i>/opt/eclipse/workset/maven</i>, e se
+necessário, configurar o uso de proxy para acesso aos repositórios remotos.
+
+	<b>Atenção:</b> o usuário que esta executando o Eclipse precisa de
+permissão de escrita neste diretório. Realize os procedimentos a seguir
+com este usuário, ou seja, não use o <i>root</i>.
+
+<comando>
+$ mkdir -p /opt/eclipse/workset/maven/repository
+</comando>
+
+<lista>
+<item/> <b>/opt/eclipse/workset/maven/settings.xml</b>: crie o arquivo de
+configuração com o modelo indicado abaixo, e caso necessário uso de proxy,
+descomente e adapte a configuração.
+</lista>
+
+<comandoNumerado>
+<settings xmlns="http://maven.apache.org/SETTINGS/1.0.0"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/SETTINGS/1.0.0
+                      http://maven.apache.org/xsd/settings-1.0.0.xsd">
+<localRepository>/opt/eclipse/workset/maven/repository</localRepository>
+<!--
+<proxies>
+	<proxy>
+		<active>true</active>
+		<protocol>http</protocol>
+		<username>proxyuser</username>
+		<password>proxypass</password>
+		<host>192.168.0.1</host>
+		<port>3128</port>
+		<nonProxyHosts>local.net|example.com</nonProxyHosts>
+	</proxy>
+	<proxy>
+		<active>true</active>
+		<protocol>https</protocol>
+		<username>proxyuser</username>
+		<password>proxypass</password>
+		<host>192.168.0.1</host>
+		<port>3128</port>
+		<nonProxyHosts>local.net|example.com</nonProxyHosts>
+	</proxy>
+</proxies>
+-->
+</settings>
+</comandoNumerado>
+
+	É necessário indicar no Eclipse o uso do novo arquivo de configuração
+do maven (m2e-wtp), como indicado:
+
+<lista>
+<item/> acesse o menu: <b>Window</b> => <b>Preferences</b> => <b>Maven</b> => <b>User
+Settings</b>
+<item/> configure a opção <i>User Settings</i> para:
+<b>/opt/eclipse/workset/maven/settings.xml</b>.
+<item/> clique em <b>Apply</b>;
+</lista>
+
+<figura>
+    <tamanhob>1.0</tamanhob>
+    <arquivob>imgs/maven_settings_01</arquivob>
+    <legenda>Maven settings</legenda>
+    <nome>fig:maven-settings-1</nome>
+</figura>
+
+<quebraPagina/>
+
+<subsecao>JbossTools</subsecao>
+
+	O JbossTools é um conjunto de ferramentas que aprimoram o
+desenvolvimento de sistemas, como:
+
+<lista>
+<item/>Integração do Eclipse com o JBoss Application Server, permitindo rápido
+<i>deploy</i> de aplicações em desenvolvimento na máquina local;
+<item/>Adiciona suporte a procedimentos de <i>debug</i> integrado ao JBoss
+Application Server;
+<item/>Inclui a perspectiva <i>Web Development</i> que permite acesso rápido
+as bibliotecas incorporadas ao projeto via Maven, e uma disposição ágil das
+classes Java;
+<item/>Demais componentes;
+</lista>
+
+<subsubsecao>Instalação</subsubsecao>
+
+	A instalação é realizada através do Eclipse, como indicado:
+
+<lista>
+<item/> acesse o menu: <b>Help</b> => <b>Eclipse Marketplace...</b>;
+<item/> digite o termo <b>jboss</b> para a pesquisa;
+<item/> clique em <b>Go</b>;
+<item/> identifique o item <b>JBoss Tools (Indigo)</b> e clique em <b>Install</b>;
+</lista>
+
+<figura>
+    <tamanhob>1.0</tamanhob>
+    <arquivob>imgs/jbosstools_install_01</arquivob>
+    <legenda>JbossTools install</legenda>
+    <nome>fig:jbosstools-install-1</nome>
+</figura>
+
+	Na nova janela, realize os seguintes procedimentos:
+
+<lista>
+<item/> identifique os items selecionados;
+<item/> clique em <b>Next</b>;
+<item/> verifique os termos da licença de uso e caso concorde, selecione:
+<b>I accept the terms of the license agreements</b>;
+<item/> clique em <b>Finish</b>;
+<item/> Aguarde o download, o acesso pode ser lento e este processo pode
+demorar;
+</lista>
+
+<figura>
+    <tamanhob>1.0</tamanhob>
+    <arquivob>imgs/jbosstools_install_02</arquivob>
+    <legenda>JbossTools install</legenda>
+    <nome>fig:jbosstools-install-2</nome>
+</figura>
+
+<quebraPagina/>
+
+<subsecao>Jboss AS</subsecao>
+
+<subsubsecao>Download</subsubsecao>
+
+<figura>
+    <tamanhob>1.0</tamanhob>
+    <arquivob>imgs/jbossAS_download_01</arquivob>
+    <legenda>Jboss AS download - http://www.jboss.org/jbossas</legenda>
+    <nome>fig:jbossAS-download-1</nome>
+</figura>
+
+<lista>
+<item/> http://www.jboss.org/jbossas/downloads
+</lista>
+
+<subsubsecao>Instalação</subsubsecao>
+
+	Os procedimentos para instalação são indicados a seguir:
+
+	<b>Atenção:</b> este procedimento pode ser realizado com o usuário que
+esta executando o Eclipse, ou seja, não requer o <i>root</i>.
+
+<comando>
+$ cd /opt/eclipse/workset
+$ unzip /path/to/jboss-as-distribution-6.1.0.Final.zip
+</comando>
+
+
+<subsubsecao>Pós-instalação</subsubsecao>
+
+	A configuração é realizada através do Eclipse, como indicado:
+
+<lista>
+	<item/> acesse o menu: <b>Window</b> => <b>Open Perspective</b> => <b>Web Development</b>;
+	<item/> no conjunto inferior de abas, selecione <b>Servers</b>;
+	<item/> clique com botão contrário do mouse na área branca interna a aba <b>Servers</b>;
+	<item/> selecione o menu <b>New</b> => <b>Server</b>;
+</lista>
+
+<figura>
+    <tamanhob>0.9</tamanhob>
+    <arquivob>imgs/jbossAS_eclipseConfig_01</arquivob>
+    <legenda>Integrando Eclipse com JbossAS</legenda>
+    <nome>fig:jbossAS-eclipse-01</nome>
+</figura>
+
+	Na janela seguinte, realize os seguintes procedimentos:
+
+<lista>
+	<item/> selecione a opção em <i>server type</i>: <b>JBoss AS 6.x</b>,
+	e clique em <b>Next</b>;
+	<item/> indique o diretório na opção <i>Home Directory</i>:
+	<b>/opt/eclipse/workset/jboss-6.1.0.Final</b>;
+	<item/> clique em <b>Finish</b>;
+</lista>
+
+<figura>
+    <tamanhob>0.7</tamanhob>
+    <arquivob>imgs/jbossAS_eclipseConfig_02</arquivob>
+    <legenda>Selecionando versão e diretório de instalação do JbossAS</legenda>
+    <nome>fig:jbossAS-eclipse-02</nome>
+</figura>
+
+	Agora, sugere-se que a publicação (<i>deploy</i>) automática seja
+desativada, conforme os seguintes procedimentos:
+
+<lista>
+	<item/> identifique a nova instância <b>JBoss 6.x Runtime Server</b> na
+	aba <b>Servers</b>;
+	<item/> clique com botão contrário do mouse na instância e selecione no
+	menu a opção <b>Open</b>;
+	<item/> no wizard, identifique a seção <b>Publishing</b> e selecione:
+	<b>never publish automatically</b>;
+	<item/> salve a configuração (Ctrl+S);
+</lista>
+
+<figura>
+    <tamanhob>1.0</tamanhob>
+    <arquivob>imgs/jbossAS_eclipseConfig_03</arquivob>
+    <legenda>Desabilitando publicação (deploy) automático</legenda>
+    <nome>fig:jbossAS-eclipse-03</nome>
+</figura>
+
+<quebraPagina/>
+
+<subsecao>Framework Demoiselle</subsecao>
+
+	O Framework demoiselle é formado por: archétipos do maven que estão
+listados no catálogo (archetype-catalog.xml) fornecido pelo projeto; e
+bibliotecas (jars) que fornecem classes comuns que permitem o
+desenvolvimento ágil de aplicações. Os principais componentes são:
+demoiselle-core, demoiselle-jsf, demoiselle-jpa, demoiselle-junit e
+demoiselle-report.
+
+<subsubsecao>Demoiselle Maven Catalog</subsubsecao>
+
+	O catálogo de archétipos do projeto demoiselle pode ser obtido em:
+
+<lista>
+<item/> http://demoiselle.sourceforge.net/repository/archetype-catalog.xml
+</lista>
+
+<subsubsecao>Configurando o catálogo de archétipos no Eclipse</subsubsecao>
+
+<lista>
+	<item/> acesse o menu: <b>Window</b> => <b>Preferences</b> =>
+	<b>Maven</b> => <b>Archetypes</b>
+	<item/> clique em <b>Add Remote Catalog...</b>;
+	<item/> indique na opção <b>Catalog File</b> a URL para o catálogo de
+	archétipos;
+	<item/> identifique o catálogo de archétipos na opção <b>Description</b>
+	como: <b>Demoiselle</b>;
+	<item/> clique em <b>Verify</b>;
+	<item/> verifique o número de archétipos encontrados, exemplo: <b>Found
+	32 archetype(s)</b>;
+	<item/> Clique em <b>OK</b>, e clique novamente em <b>OK</b>;
+</lista>
+
+<figura>
+    <tamanhob>1.0</tamanhob>
+    <arquivob>imgs/maven_catalog_01</arquivob>
+    <legenda>Maven catalog</legenda>
+    <nome>fig:maven-catalog-1</nome>
+</figura>
+
+	<b>Atenção</b>: esta configuração será salva em seu workspace
+(~/workspace/.metadata/.plugins/ org.maven.ide.eclipse/archetypesInfo.xml),
+e deverá ser refeita no caso de uso de outro workspace.
+
+<subsubsecao>Novo projeto Maven</subsubsecao>
+
+<lista>
+	<item/> acesse o menu: <b>File</b> => <b>New</b> =>	<b>Project</b>;
+</lista>
+
+<figura>
+    <tamanhob>0.9</tamanhob>
+    <arquivob>imgs/maven_demoiselle_01</arquivob>
+    <legenda>Novo projeto Maven</legenda>
+    <nome>fig:maven-demoiselle-1</nome>
+</figura>
+
+<figura>
+    <tamanhob>0.9</tamanhob>
+    <arquivob>imgs/maven_demoiselle_02</arquivob>
+    <legenda>Novo projeto Maven</legenda>
+    <nome>fig:maven-demoiselle-1</nome>
+</figura>
+
+<subsubsecao>Publicando a aplicação</subsubsecao>
+
+<figura>
+    <tamanhob>0.9</tamanhob>
+    <arquivob>imgs/maven_demoiselle_03</arquivob>
+    <legenda>Novo projeto Maven</legenda>
+    <nome>fig:maven-demoiselle-1</nome>
+</figura>
+
+<subsubsecao>Acessando a aplicação</subsubsecao>
+
+<figura>
+    <tamanhob>0.8</tamanhob>
+    <arquivob>imgs/maven_demoiselle_04</arquivob>
+    <legenda>Novo projeto Maven</legenda>
+    <nome>fig:maven-demoiselle-1</nome>
+</figura>

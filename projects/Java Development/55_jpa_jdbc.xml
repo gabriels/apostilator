@@ -1,0 +1,59 @@
+<capitulo>Configuração do Projeto</capitulo>
+
+<subsecao>Alterar database</subsecao>
+
+<subsubsecao>Driver JDBC</subsubsecao>
+
+<lista>
+	<item/> http://dev.mysql.com/downloads/connector/j/
+	<item/> http://jdbc.postgresql.org/download.html
+</lista>
+
+<subsubsecao>Data Source</subsubsecao>
+
+<comando>
+<datasources> 
+  <local-tx-datasource> 
+ 
+    <jndi-name>exampleDS</jndi-name>     
+ 
+    <connection-url>jdbc:mysql://localhost:3306/exampledb</connection-url>        
+    <driver-class>com.mysql.jdbc.Driver</driver-class>   
+ 
+    <user-name>exampleuser</user-name>
+    <password>123456</password> 
+ 
+    <connection-property name="autoReconnect">false</connection-property>
+ 
+    <!-- Typemapping for JBoss 4.0     
+    <metadata> 
+      <type-mapping>mySQL</type-mapping> 
+    </metadata> 
+    -->
+  </local-tx-datasource> 
+</datasources>
+</comando>
+
+<subsubsecao>Persistence</subsubsecao>
+
+<comando>
+<?xml version="1.0" encoding="UTF-8"?>
+<persistence version="2.0" xmlns="http://java.sun.com/xml/ns/persistence"
+			 xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+			 xsi:schemaLocation="http://java.sun.com/xml/ns/persistence
+				http://java.sun.com/xml/ns/persistence/persistence_2_0.xsd">
+	<persistence-unit name="bookmark-ds" transaction-type="RESOURCE_LOCAL">
+		<non-jta-data-source>java:/exampleDS</non-jta-data-source>
+		<class>com.example.javaweb.projetojsf.domain.Bookmark</class>
+		<properties>
+			<property name="hibernate.show_sql" value="true"/>
+			<property name="hibernate.format_sql" value="false"/>
+			<property name="hibernate.hbm2ddl.auto" value="update"/>
+			<property name="hibernate.transaction.manager_lookup_class"
+					  value="org.hibernate.transaction.JBossTransactionManagerLookup"/>
+			<property name="hibernate.dialect"
+					  value="org.hibernate.dialect.MySQLInnoDBDialect"/>
+		</properties>
+	</persistence-unit>
+</persistence>
+</comando>

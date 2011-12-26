@@ -1,0 +1,50 @@
+#!/bin/bash
+
+start() {
+	echo -n "Starting GlassFish v2"
+	su -l glassfish2 -c '/opt/glassfish/bin/asadmin start-domain domain1 > /dev/null 2>&1'
+	echo .
+}
+
+stop() {
+	echo -n "Stopping GlassFish v2"
+	su -l glassfish2 -c '/opt/glassfish/bin/asadmin stop-domain domain1 > /dev/null 2>&1'
+	i=0
+	while true; do
+		if [ $i -gt 15 ] ; then
+			su -l glassfish2 -c 'killall -9 java' > /dev/null 2>&1
+		elif [ $i -gt 10 ] ; then
+			su -l glassfish2 -c 'killall java' > /dev/null 2>&1
+		fi
+		if (ps -ef | grep -v grep | grep -q java) ; then
+			echo -n .
+			sleep 2
+		else
+			break
+		fi
+		let i++
+	done
+	echo .
+}
+
+restart() {
+	stop
+	start
+}
+
+case "$1" in
+   start)
+         start
+         ;;
+   stop)
+         stop
+         ;;
+   restart)
+         restart
+         ;;
+   *)
+         echo "Usage: $0 {start | stop | restart}"
+         exit 1
+esac
+
+exit 0

@@ -1,0 +1,246 @@
+<capitulo>GlassFish 2</capitulo>
+
+<subsecao>Instalação</subsecao>
+
+<subsubsecao>Download</subsubsecao>
+
+	O instalador do Glassfish2 pode ser obtido no seguinte endereço:
+
+<lista>
+<item/> http://glassfish.java.net/downloads/v2-b58g.html
+<item/> http://download.java.net/javaee5/v2_branch/promoted/Linux/glassfish-installer-v2-b58g.jar
+</lista>
+
+<subsubsecao>Instalação</subsubsecao>
+
+	Deve-se criar um usuário (ex. glassfish2) para execução do servidor de
+aplicação:
+
+<comando>
+# adduser --home /opt --no-create-home --shell /bin/bash --system glassfish2
+# passwd glassfish2
+# chown glassfish2 /opt
+# exit
+</comando>
+
+	Os passos abaixo descrevem a instalação do servidor de aplicação:
+
+<comando>
+$ ssh -X glassfish2@server
+$ wget http://download.java.net/.../Linux/glassfish-installer-v2-b58g.jar
+$ java -Xmx512m -jar glassfish-installer-v2-b58g.jar
+$ cd glassfish
+$ chmod 755 lib/ant/bin/ant
+$ ./lib/ant/bin/ant -f setup.xml
+</comando>
+
+<subsubsecao>Pós-instalação</subsubsecao>
+
+	Após a instalação deve-se realizar os seguintes procedimentos:
+
+<comando>
+$ scp ojdbc14_g.jar glassfish2@server:/opt/glassfish/lib/
+$ ssh glassfish2@server
+$ cd glassfish/bin
+$ ./asadmin start-domain domain1
+$ ./asadmin change-admin-password
+</comando>
+
+<subsubsecao>Inicialização</subsubsecao>
+
+	Deve-se criar o seguinte <i>invoke script</i> para realizar a inicialização e
+parada do servidor de aplicação de forma apropriada, salve o conteúdo abaixo
+em <i>/etc/init.d/glassfish2</i>.
+
+<comandoNumerado>
+#!/bin/bash
+
+start() {
+    echo -n "Starting GlassFish v2"
+    su -l glassfish2 \
+       -c '/opt/glassfish/bin/asadmin start-domain domain1 > /dev/null 2>&1'
+    echo .
+}
+
+stop() {
+    echo -n "Stopping GlassFish v2"
+    su -l glassfish2 \
+       -c '/opt/glassfish/bin/asadmin stop-domain domain1 > /dev/null 2>&1'
+    i=0
+    while true; do
+        if [ $i -gt 15 ] ; then
+            su -l glassfish2 -c 'killall -9 java' > /dev/null 2>&1
+        elif [ $i -gt 10 ] ; then
+            su -l glassfish2 -c 'killall java' > /dev/null 2>&1
+        fi
+        if (ps -ef | grep -v grep | grep -q java) ; then
+            echo -n .
+            sleep 2
+        else
+            break
+        fi
+        let i++
+    done
+    echo .
+}
+
+case "$1" in
+   start)
+         start
+         ;;
+   stop)
+         stop
+         ;;
+   restart)
+         stop
+         start
+         ;;
+   *)
+         echo "Usage: $0 {start | stop | restart}"
+         exit 1
+esac
+
+exit 0
+</comandoNumerado>
+
+	Deve-se cadastar o referido <i>invoke script</i> para ser executado
+durante a inicialização e desligamento do sistema operacional, conforme
+indicado abaixo:
+
+<comando>
+# chmod 755 /etc/init.d/glassfish2
+# update-rc.d -f glassfish2 defaults
+</comando>
+
+<subsubsecao>Problemas</subsubsecao>
+
+<lista>
+<item/><b>libXtst.so.6: cannot open shared object file</b>
+</lista>
+
+<comando>
+$ java -Xmx256m -jar glassfish-installer-v2-b58g.jar
+Exception in thread "main" java.lang.UnsatisfiedLinkError:
+        /usr/lib/jvm/java-6-sun-1.6.0.26/jre/lib/amd64/xawt/libmawt.so:
+        /libXtst.so.6: cannot open shared object file: No such file or directory
+</comando>
+
+<lista>
+<item/><b>Solução</b>
+</lista>
+
+<comando>
+aptitude install libxtst6
+</comando>
+
+<subsecao>Publicação de Aplicação (Deploy)</subsecao>
+
+	Os procedimentos a seguir serão realizados no console web de
+administração do servidor de aplicação, acessível através da endereço:
+
+<lista>
+<item/><b>http://paappgf01.redetre.jus.br:4848</b> 
+</lista>
+
+<subsubsecao>Pool de conexão</subsubsecao>
+
+	O servidor de aplicação atua como intermediário entre a aplicação e
+banco de dados relacionais, aplicando controles sobre estes acesso. Isto
+ocorre através do pool de conexões, que dentre os controles, pode limitar
+a quantidade de conexões ao banco.
+
+	Em geral, cada aplicação utiliza seu próprio pool de conexões, que deve
+ser configurado através do console web de administração, conforme indicado:
+
+<lista>
+<item/><b>Resources</b> => <b>JDBC</b> => <b>Connection Pools</b>
+</lista>
+
+<figura>
+    <tamanhob>1.0</tamanhob>
+    <arquivob>imgs/gf2_cPool_01</arquivob>
+    <legenda>Novo pool de conexão</legenda>
+    <nome>fig:gf2-connection-pool-1</nome>
+</figura>
+
+<figura>
+    <tamanhob>1.0</tamanhob>
+    <arquivob>imgs/gf2_cPool_02</arquivob>
+    <legenda>Identificar o pool de conexão</legenda>
+    <nome>fig:gf2-connection-pool-2</nome>
+</figura>
+
+<figura>
+    <tamanhob>1.0</tamanhob>
+    <arquivob>imgs/gf2_cPool_03</arquivob>
+    <legenda>Configurar o pool de conexão</legenda>
+    <nome>fig:gf2-connection-pool-3</nome>
+</figura>
+
+<figura>
+    <tamanhob>1.0</tamanhob>
+    <arquivob>imgs/gf2_cPool_04</arquivob>
+    <legenda>Conferir o pool de conexão</legenda>
+    <nome>fig:gf2-connection-pool-4</nome>
+</figura>
+
+<subsubsecao>JDBC</subsubsecao>
+
+	O recurso JDBC é utilizado para associar um nome JNDI a um pool de conexões
+previamente criado, e deve ser configurado através do console web de
+administração, conforme indicado:
+
+<lista>
+<item/><b>Resources</b> => <b>JDBC</b> => <b>JDBC Resources</b>
+</lista>
+
+<figura>
+    <tamanhob>1.0</tamanhob>
+    <arquivob>imgs/gf2_JDBC_01</arquivob>
+    <legenda>Novo recurso JDBC</legenda>
+    <nome>fig:gf2-jdbc-1</nome>
+</figura>
+
+<figura>
+    <tamanhob>1.0</tamanhob>
+    <arquivob>imgs/gf2_JDBC_02</arquivob>
+    <legenda>Identificar o recurso JDBC</legenda>
+    <nome>fig:gf2-jdbc-2</nome>
+</figura>
+
+<figura>
+    <tamanhob>1.0</tamanhob>
+    <arquivob>imgs/gf2_JDBC_03</arquivob>
+    <legenda>Conferir o recurso JDBC</legenda>
+    <nome>fig:gf2-jdbc-3</nome>
+</figura>
+
+<subsubsecao>Deploy</subsubsecao>
+
+	A publicação de uma aplicação deve ser realizada através do console web
+de administração, conforme indicado:
+
+<lista>
+<item/><b>Applications</b> => <b>Entreprise Applications</b>
+</lista>
+
+<figura>
+    <tamanhob>1.0</tamanhob>
+    <arquivob>imgs/gf2_deploy_01</arquivob>
+    <legenda>Publicação de sistema</legenda>
+    <nome>fig:gf2-deploy-1</nome>
+</figura>
+
+<figura>
+    <tamanhob>1.0</tamanhob>
+    <arquivob>imgs/gf2_deploy_02</arquivob>
+    <legenda>Selecionar o pacote com o sistema</legenda>
+    <nome>fig:gf2-deploy-1</nome>
+</figura>
+
+<figura>
+    <tamanhob>1.0</tamanhob>
+    <arquivob>imgs/gf2_deploy_03</arquivob>
+    <legenda>Conferir a publicação do sistema</legenda>
+    <nome>fig:gf2-deploy-1</nome>
+</figura>

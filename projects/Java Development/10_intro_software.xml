@@ -1,0 +1,57 @@
+<capitulo>Sistema Operacional</capitulo>
+
+<subsecao>Debian GNU/Linux</subsecao>
+
+    Os sistemas operacionais baseados em tecnologias livres tendem a fornecer
+um utilitário que realiza instalações automatizadas, sendo no Debian
+utilizado o <b>aptitude</b>.
+
+    Ao realizar a instalação de um determinado <i>software</i>, este informa
+ao <i>aptitude</i> quais bibliotecas são necessárias para o seu
+funcionamento (<i>dependências</i>) e quais são <i>recomendadas</i>, sendo
+que estas não são essenciais para a execução do <i>software</i> principal.
+
+    Por padrão, ambos conjuntos de bibliotecas serão instalados, todavia
+isto induz a utilização de espaço em disco adicional e a presença de serviços
+que não serão utilizados. Pode-se desabilitar a instalação de <i>software</i>
+<i>recomendado</i> através da adição da seguinte configuração ao arquivo
+<b>/etc/apt/apt.conf</b>:
+
+<comando>
+Apt::Install-Recommends "false";
+</comando>
+
+    Caso a conectividade seja fornecida por um proxy via http, a seguinte
+configuração deve ser adicionada ao arquivo <b>/etc/apt/apt.conf</b>, com a
+devida adequação ao endereço IP do proxy:
+
+<comando>
+Acquire::http::Proxy "http://192.168.0.1:3128";
+</comando>
+
+    O utilitário <i>aptitude</i> também requer a configuração da fonte do
+<i>software</i> a ser instalado, e isto é realizado no arquivo
+<b>/etc/apt/sources.list</b>, conforme indicado a seguir:.
+
+<comando>
+deb http://security.debian.org/ squeeze/updates main
+deb http://ftp.br.debian.org/debian/ squeeze main contrib non-free
+deb http://ftp.br.debian.org/debian/ squeeze-updates main
+</comando>
+
+    Após a definição das fontes, é necessário o <i>download</i> da lista de
+<i>software</i> disponível, e posterior atualização do sistema:
+
+<comando>
+    # aptitude update
+    # aptitude safe-upgrade
+</comando>
+
+<subsecao>JVM</subsecao>
+
+	A máquina virtual Java é essencial para a execução dos aplicativos Java.
+A instalação pode ser realizada conforme indicado:
+
+<comando>
+    # aptitude install sun-java6-jdk libaio1
+</comando>
