@@ -1,0 +1,356 @@
+<capitulo>Xen</capitulo>
+
+    O projeto Xen é formado essencialmente pelo <i>Xen Hypervisor</i>, por um
+sistema operacional com suporte a execução em modo paravirtualizado para
+funcionar como domínio privilegiado (<b>dom0</b>), e por serviços executados
+neste domínio privilegiado, como o <i>Xend</i> e o <i>XenStored</i>.
+
+<subsecao>Xen Hypervisor</subsecao>
+
+   Inicialmente deve-se realizar a instalação de um sistema operacional
+convencional (como Linux, NetBSD ou OpenSolaris), sendo sucedida pela
+instalação do <i>Hypervisor</i>. A instalação no Debian GNU/Linux é
+realizada através do comando:
+
+<comando>
+    # aptitude install xen-hypervisor-3.2-1-i386 linux-image-2.6.26-2-xen-686
+</comando>
+
+    Os principais pacotes instalados são:
+
+<tabela>{|l|l|}
+<lh><th>Pacote</th> <col/> <th>Descrição</th></lh>
+<tr>xen-hypervisor-3.2-1-i386      <col/> Xen Hypervisor </tr>
+<tr>linux-image-2.6.26-2-xen-686   <col/> Kernel Linux com suporte a execução sob o Xen hypervidor </tr>
+<tr>linux-modules-2.6.26-2-xen-686 <col/> Módulos dos kernel </tr>
+<legenda>Hypervisor e Domain-0</legenda>
+<nome>tab:xen-deb-hypervisor</nome>
+</tabela>
+
+    Após a instalação dos referidos pacotes, o <i>Hypervisor</i>:
+<i>xen-3.2-1-i386.gz</i> é configurado no menu de inicialização do GRUB
+(/boot/grub/menu.lst), conforme indicado a seguir:
+
+<comandoNumerado>
+title           Xen 3.2-1-i386 / Debian GNU/Linux, kernel 2.6.26-2-xen-686
+root            (hd0,0)
+kernel          /boot/xen-3.2-1-i386.gz
+module          /boot/vmlinuz-2.6.26-2-xen-686 root=/dev/sda2 ro console=tty0
+module          /boot/initrd.img-2.6.26-2-xen-686
+</comandoNumerado>
+
+    Alguns parâmetros do <i>Xen Hypervisor</i> podem ser configurados na
+linha 3, assim como parâmetros do kernel do <i>dom0</i> na linha 4.
+
+    Entretanto, apesar do kernel <i>vmlinuz-2.6.26-2-xen-686</i> não ser
+inicializável pelo carregador de boot, este foi inserido desnecessariamente
+no arquivo de configuração <i>/boot/grub/menu.lst</i> pela ferramenta
+<i>update-grub</i> conforme exibido na listagem abaixo:
+
+<comandoNumerado>
+title           Debian GNU/Linux, kernel 2.6.26-2-xen-686
+root            (hd0,0)
+kernel          /boot/vmlinuz-2.6.26-2-xen-686 root=/dev/sda2 ro quiet
+initrd          /boot/initrd.img-2.6.26-2-xen-686
+
+title           Debian GNU/Linux, kernel 2.6.26-2-xen-686 (single-user mode)
+root            (hd0,0)
+kernel          /boot/vmlinuz-2.6.26-2-xen-686 root=/dev/sda2 ro single
+initrd          /boot/initrd.img-2.6.26-2-xen-686
+</comandoNumerado>
+
+    Apesar das linhas do quadro acima poderem ser removidas com segurança, esta
+configuração será inserida novamente após uma futura atualização do kernel.
+
+    Após o <i>boot</i> do <i>Xen Hypervisor</i>, é realizada a inicialização do
+domínio privilegiado que é necessariamente paravirtualizado e depende de um
+sistemas operacional que forneça um kernel com suporte ao <i>Hypervisor</i>. O
+sistema que foi inicialmente instalado na máquina física, agora tornou-se o
+<i>Guest</i> privilegiado.
+
+    Os demais domínios (<i>domU</i>), podem ser paravirtualizados ou sob
+virtualização completa (que permite a utilização de qualquer sistema operacional).
+
+
+<subsecao>Xend</subsecao>
+
+	O serviço Xend é o meio de comunicação com o <i>Hypervisor</i>, e
+ele é necessário para poder controlar o <i>Hypervisor</i> em execução. Sua
+instalação é realizada a seguir:
+
+<comando>
+    # aptitude install xen-utils-3.2-1
+</comando>
+
+<tabela>{|l|l|}
+<lh><th>Pacote</th> <col/> <th>Descrição</th></lh>
+<tr>xen-utils-3.2-1                <col/> Serviços Xend e XenStored, o utilitário xm, ... </tr>
+<tr>xenstore-utils                 <col/> Utilitários xenstore-list, xenstore-read, xenstore-ls, ... </tr>
+<legenda>Pacotes do Xen</legenda>
+<nome>tab:xen-deb-xend</nome>
+</tabela>
+
+    Visualizando configuração:
+
+<comando>
+# grep -vE '^#|^$' /etc/xen/xend-config.sxp
+</comando>
+
+<comandoNumerado>
+(logfile /var/log/xen/xend.log)
+(loglevel DEBUG)
+
+(xend-http-server no)
+#(xend-port            8000)
+
+(xend-unix-server yes)
+(xend-unix-xmlrpc-server yes)
+#(xend-unix-path /var/lib/xend/xend-socket)
+
+(xend-tcp-xmlrpc-server no)
+#(xen-tcp-xmlrpc-server-address 'localhost')
+#(xen-tcp-xmlrpc-server-port 8006)
+#(xend-tcp-xmlrpc-server-ssl-key-file  /etc/xen/xmlrpc.key)
+#(xend-tcp-xmlrpc-server-ssl-cert-file /etc/xen/xmlrpc.crt)
+
+
+
+#(xend-relocation-port 8002)
+#(xend-relocation-address '')
+(xend-relocation-server yes)
+(xend-relocation-hosts-allow '')
+
+#(console-limit 1024)
+
+(network-script network-bridge)
+(vif-script vif-bridge)
+(dom0-min-mem 196)
+(dom0-cpus 0)
+#(enable-dump no)
+#(external-migration-tool '')
+
+
+(vnc-listen '0.0.0.0')
+(vncpasswd '')
+# (vnc-tls 1)
+# (vnc-x509-cert-dir /etc/xen/vnc)
+# (vnc-x509-verify 1)
+
+#(keymap 'en-us')
+#(resource-label-change-script '')
+
+</comandoNumerado>
+
+
+
+<subsecao>Xenstored</subsecao>
+
+    Os seguintes utilitários listados a seguir estão disponíveis para
+manipulação do XenStored. Todos requerem como primeiro argumento uma
+chave de registro armazenada na base TDB (/var/lib/xenstored/tdb).
+
+<tabela>{|l|l|}
+<lh><th>Comando</th> <col/> <th>Descrição</th></lh>
+<tr>xenstore-list                <col/> Lista chaves internas (filhas) a chave indicada</tr>
+<tr>xenstore-read                <col/> Ler valor de uma chave</tr>
+<tr>xenstore-ls                  <col/> Lista chaves e ler valores (recursivamente)</tr>
+<tr>xenstore-exists              <col/> Retorna verdadeiro ($?=0) se chave existe</tr>
+<tr>xenstore-write               <col/> Altera valor da chave</tr>
+<tr>xenstore-rm                  <col/> Remove chave</tr>
+<tr>xenstore-chmod               <col/> Alteração permissão de uma chave</tr>
+<legenda>Utilitários do XenStored</legenda>
+<nome>tab:xen-xenstored</nome>
+</tabela>
+
+<subsubsecao>xenstore-list</subsubsecao>
+
+    Como indicado na seção<ref>sec:intro-xen-xenstore</ref> são
+armazenados no formato de registro ligados hierarquicamente, semelhantemente a
+estrutura de um sistema de arquivos.
+
+<figura>
+  <tamanho>0.9</tamanho>
+  <arquivo>imgs/xen-xenstore-tdb-root</arquivo>
+  <legenda>Estrutura do TDB do Xenstored</legenda>
+  <nome>fig:xen-xenstore-tdb-root</nome>
+</figura>
+
+<comandoNumerado>
+# xenstore-list /
+tool
+local
+vm
+</comandoNumerado>
+
+<figura>
+  <tamanho>0.9</tamanho>
+  <arquivo>imgs/xen-xenstore-tdb-vm</arquivo>
+  <legenda>Estrutura do TDB do Xenstored</legenda>
+  <nome>fig:xen-xenstore-tdb-vm</nome>
+</figura>
+
+<comandoNumerado>
+# xenstore-list /vm
+00000000-0000-0000-0000-000000000000
+c362a8db-60e7-04b9-d7be-c033c2d0f8b7
+5a0cfc98-4847-0243-c9c4-29b8084e6859
+45ab36fd-4311-48d8-74d5-84da9918c6e9
+b8137f4f-dfa5-f1d9-27d0-0ab6599e18ca
+a44fb0e0-281b-1002-cd6c-8c3180d69b8e
+
+# xenstore-list /vm/00000000-0000-0000-0000-000000000000
+on_xend_stop
+shadow_memory
+uuid
+on_reboot
+image
+on_poweroff
+on_xend_start
+on_crash
+xend
+vcpus
+vcpu_avail
+name
+memory
+</comandoNumerado>
+
+<figura>
+  <tamanho>0.9</tamanho>
+  <arquivo>imgs/xen-xenstore-tdb-local</arquivo>
+  <legenda>Estrutura do TDB do Xenstored</legenda>
+  <nome>fig:xen-xenstore-tdb-local</nome>
+</figura>
+
+<comandoNumerado>
+# xenstore-list /local
+domain
+
+# xenstore-list /local/domain
+0
+5
+24
+26
+37
+65
+
+# xenstore-list /local/domain/37
+vm
+device-misc
+device
+console
+image
+store
+control
+memory
+cpu
+name
+domid
+serial
+
+</comandoNumerado>
+
+
+<subsubsecao>xenstore-read</subsubsecao>
+
+<comando>
+# xenstore-read /vm/00000000-0000-0000-0000-000000000000/name
+Domain-0
+
+# xenstore-read /vm/00000000-0000-0000-0000-000000000000/memory
+2432
+
+# xenstore-read /vm/f85099ce-eedf-8f5c-81ab-74c1247f9082/name
+zeus
+
+# xenstore-read /vm/f85099ce-eedf-8f5c-81ab-74c1247f9082/memory
+1024
+</comando>
+
+<subsubsecao>xenstore-ls</subsubsecao>
+
+<comando>
+# xenstore-ls /vm/00000000-0000-0000-0000-000000000000
+on_xend_stop = "ignore"
+shadow_memory = "0"
+uuid = "00000000-0000-0000-0000-000000000000"
+on_reboot = "restart"
+image = "(linux (kernel ))"
+ ostype = "linux"
+ kernel = ""
+ cmdline = ""
+ ramdisk = ""
+on_poweroff = "destroy"
+on_xend_start = "ignore"
+on_crash = "restart"
+xend = ""
+ restart_count = "0"
+vcpus = "8"
+vcpu_avail = "255"
+name = "Domain-0"
+memory = "2432"
+</comando>
+
+<subsubsecao>xenstore-exists</subsubsecao>
+
+<comando>
+# xenstore-exists /vm/00000000-0000-0000-0000-000000000000/memory
+# echo $?
+0
+
+# xenstore-exists /vm/00000000-0000-0000-0000-000000000000/mem
+# echo $?
+1
+</comando>
+
+<subsubsecao>xenstore-write</subsubsecao>
+
+<comando>
+# xenstore-read /local/domain/37/memory/target
+1048576
+# xenstore-write /local/domain/37/memory/target 800000
+# xenstore-read /local/domain/37/memory/target
+800000
+
+# xenstore-write /local/domain/0/info-custom "hello"
+
+</comando>
+
+<subsubsecao>xenstore-rm</subsubsecao>
+
+<comando>
+# xenstore-rm /local/domain/0/info-custom
+</comando>
+
+<subsubsecao>xenstore-chmod</subsubsecao>
+
+<comando>
+xenstore-write /local/domain/0/info-custom "hello"
+xenstore-chmod /local/domain/0/info-custom r
+</comando>
+
+<subsubsecao>xenstore-dump.sh</subsubsecao>
+
+<comando>
+#!/bin/sh
+
+function dumpkey() {
+   local param=${1}
+   local key
+   local result
+   result=$(xenstore-list ${param})
+   if [ "${result}" != "" ] ; then
+      for key in ${result} ; do dumpkey ${param}/${key} ; done
+     else
+      echo -n ${param}'='
+      xenstore-read ${param}
+   fi
+}
+
+for key in /vm /local/domain /tool ; do dumpkey ${key} ; done
+
+</comando>
+
+<comando>
+# chmod 755 xenstore-dump.sh
+# ./xenstore-dump.sh
+</comando>

@@ -1,0 +1,282 @@
+<capitulo>Introdução à virtualização</capitulo>
+
+    A virtualização permite a utilização de um mesmo computador físico para a
+execução simultânea de diferentes instâncias de sistemas operacionais. O
+computador físico em conjunto com o <i>software</i> de virtualização é
+comumente referenciado pelo termo <i>Host</i> e as máquinas virtuais chamadas a
+de <i>Guests</i> (hóspedes).
+
+<subsecao>Benefícios da virtualização</subsecao>
+
+    Abaixo foram relacionados alguns benefícios da virtualização
+<citar>ExecXen</citar> divididos por categoria.
+
+<subsubsecao>Benefícios relativos a melhoria do serviço</subsubsecao>
+
+<lista>
+<item/> Alta disponibilidade. A virtualização em conjunto com sistemas de
+armazenamento externo (<i>storages</i> com <i>Fiber Channel</i> ou tecnologias
+via rede <i>iSCSI</i>, <i>AoE</i>, <i>NFS</i> ou <i>CIFS/SMB</i>) possibilita
+que, em caso de indisponibilidade do <i>Host</i> de origem, ocorra a realocação
+de máquinas <i>Guests</i> em outra máquina física.
+
+<item/> Alta performace. Técnicas de virtualização permitem a realocação em
+tempo real de máquinas <i>Guests</i> entre diferentes máquinas físicas sem a
+interrupção dos serviços e conexões de rede. Esta operação é ainda
+imperceptível aos usuários conectados a este <i>Guest</i>. Este recurso é
+chamado de <b>migração dinâmica</b> e pode ser utilizado para a realocação
+de <i>Guests</i> que estejam demandando maior processamento para outra
+máquina física disponível.
+</lista>
+
+<subsubsecao>Benefícios econômicos</subsubsecao>
+
+<lista>
+<item/> Consolidação de servidores. A virtualização permite a unificação de
+diversos serviços de rede em uma máquina física com a criação de <i>Guests</i>
+de função específica (DNS, e-mail, <i>web server</i>, etc) e administração
+independente.
+
+<item/> Economia de energia elétrica com a redução de máquinas físicas
+ativas e consequente redução da capacidade de resfriamento. O custo do Kw/h
+elevado tende a favorecer o crescimento da virtualização ocorrendo a redução
+desse tipo de custo.
+
+<item/> Reduz a necessidade de aquisições de computadores e propicia melhor
+aproveitamento do poder computacional. A virtualização permite melhor uso do
+processamento atualmente ocioso, uma vez que com a agregação de máquinas
+tende-se a melhor utilizar o poder computacional.
+
+<item/> Benefícios que impactam na redução dos custos totais de propriedades
+(TCO, total cost of ownership).
+
+</lista>
+
+<subsubsecao>Benefícios para P&D e segurança</subsubsecao>
+
+<lista>
+<item/> Depurar sistemas operacionais. A virtualização permite um aumento de
+produtividade no desenvolvimento ou em modificações de sistemas de baixo
+nível como o kernel e drivers de dispositivos. Uma vez que estes possuem maior
+probabilidade de gerar o travamento do sistema operacional, estas eventuais
+falhas não afetarão a máquina física.
+
+<item/> Execução de sistemas operacionais antigos e aplicativos legados. A
+virtualização permite a utilização destes sistemas em <i>hardware</i>
+modernos, evitando possível custos de migrações para novas plataformas.
+
+<item/> Estudo dos efeitos de <i>worms</i>, <i>trojans</i> e de vírus. A
+virtualização permite o isolamento entre os <i>Guests</i> fazendo com que
+nenhuma interação ocorra entre eles, exceto através da comunicação de rede
+autorizada através de configuração específica.
+
+<item/> Testes de atualizações de sistemas ou <i>software</i> experimentais
+antes de aplicá-los a sistema em produção.
+</lista>
+
+
+<subsecao>Tipos de virtualização</subsecao>
+
+    A virtualização pode ocorrer de diversas formas, sendo que tendem a
+alcançar objetivos distintos. Quatro destas serão brevemente descritas a
+seguir.
+
+<subsubsecao>Emuladores</subsubsecao>
+
+    Os emuladores têm o objetivo de simular qualquer tipo <i>hardware</i>,
+existente ou não, para seus <i>Guests</i>. Dessa forma, é possível simular a
+presença de um hardware antes do mesmo ser efetivamente fabricado,
+implementando-o através dos recursos fornecidos pelos emuladores. Também é
+possível desenvolver e testar o <i>driver</i> de acesso a este dispositivo, o
+qual será utilizado quando o dispositivo real for comercializado.
+
+    Assim, este tipo de arquitetura de virtualização é voltada para
+profissionais que desejam implementar novas arquiteturas de <i>hardware</i>,
+dispositivos e/ou drivers, pois fornece uma interface de programação para a
+simulação de <i>hardware</i>, assim como, para simulação da comunicação do
+sistema operacional com este.
+
+    Todavia essa flexibilidade para a virtualização de diferentes
+arquiteturas requer uma elevada carga de processamento, tornando os
+emuladores um método de virtualização de baixa performace. Um exemplo
+da funcionalidade dos emuladores é a possibilidade de virtualizar um
+<i>Guest</i> de arquitetura SPARC ou POWERPC, sendo que a máquina física é
+X86. São exemplos desta tecnologia: Bochs e QEMU.
+
+<figura>
+    <tamanho>0.9</tamanho>
+    <arquivo>imgs/virt-emuladores</arquivo>
+    <legenda>Emuladores</legenda>
+    <nome>fig:virt-emuladores</nome>
+</figura>
+
+<subsubsecao>Virtualização completa</subsubsecao>
+
+    Diferentemente dos emuladores, a virtualização completa só ocorre dentro da
+mesma arquitetura. Dessa forma, uma máquina física X86 só poderá virtualizar a
+aquitetura X86.
+
+    Em geral, os dispositivos virtuais que são fornecidos (enxergados,
+detectados) aos <i>Guests</i> são clones de dispositivos padrões de mercado,
+para que o <i>Guest</i> reconheça-os automaticamente, sem a necessidade de
+instalação de drivers adicionais.
+
+    Isto quer dizer que, independentemente do modelo do dispositivo da máquina
+física (ex: placa de rede <i>3COM</i>, <i>Broadcom</i>, <i>Realtek</i>, etc),
+os <i>Guests</i> sempre reconhecerão o dispositivo virtual como de um
+determinado modelo (ex: placa de rede <i>AMD PCNET</i>).
+
+    Assim, o <i>Host</i> necessita realizar a conversão do formato dos dados
+enviados pelos <i>Guests</i> para o driver do dispositivo real. Lembre-se que
+o <i>Guest</i> utilizou o driver para um dispostivo virtual, e o <i>Host</i>
+precisa agora transmitir essa informação para o dispositivo real. Este
+procedimento existe unicamente para que não seja necessário instalar drivers
+adicionais nas máquinas <i>Guests</i>. São exemplos desta tecnologia:
+Xen, Linux KVM, IBM z/VM, Virtual Box, VMware e Virtual PC.
+
+<figura>
+    <tamanho>0.9</tamanho>
+    <arquivo>imgs/virt-completa</arquivo>
+    <legenda>Virtualização completa</legenda>
+    <nome>fig:virt-completa</nome>
+</figura>
+
+<subsubsecao>Paravirtualização</subsubsecao>
+
+    A paravirtualização também está restrita a virtualização da mesma
+arquitetura da máquina física, mas otimiza a virtualização completa ao passo
+que os dispositivos fornecidos (enxergados, detectados) às máquinas
+<i>Guests</i> são especialmente projetados para facilitar a retransmissão dos
+dados para o dispositivo real pelo <i>Host</i>.
+
+    Dessa forma, as máquinas <i>Guests</i> necessitam possuir drivers para
+estes novos dispositivos. Como exemplo poderia-se imaginar que as máquinas
+<i>Guests</i> de um <i>Host</i> executando Xen detectariam uma placa de rede
+do modelo <i>Xen Network Interface</i>, sendo que o <i>Host</i> receberia estes
+dados e os transmitiria ao dispositivo real.
+
+<figura>
+    <tamanho>0.9</tamanho>
+    <arquivo>imgs/virt-para</arquivo>
+    <legenda>Paravirtualização</legenda>
+    <nome>fig:virt-para</nome>
+</figura>
+
+    Embora a paravirtualização suporte diferentes sistemas operacionais
+como <i>Guests</i>, há a necessidade de alterações nestes sistemas para serem
+capazes de utilizar o <i>hardware</i> virtual disponibilizado, o que reduz o
+número efetivo de sistemas operacionais suportados. No futuro, é possível que
+todos os sistemas operacionais possam ser executados sobre a
+paravirtualização, inclusive os proprietários, o que dependerá do fabricante
+implementar o suporte necessário em nível de drivers.
+
+    O conceito de disponibilizar um <i>hardware</i> virtual que propicie ganho
+de performace também é extendido para o acesso a processadores, memória e
+entrada/saída (I/O); fazendo com que esta arquitetura de virtualização possua a
+melhor performace e capacidade de gerência sobre os <i>Guests</i> do que as
+arquiteturas supra-citadas. São exemplos desta tecnologia: Xen, User-Mode
+Linux, Lguest e VMware.
+
+<subsubsecao>Virtualização em nível de sistema operacional</subsubsecao>
+
+    As arquiteturas de virtualização supra-mencionadas utilizam um kernel
+independente para cada <i>Guest</i>, e este kernel comunica-se com o
+<i>Host</i> de forma semelhante ao que fariam caso estivessem se comunicando
+diretamente com <i>hardware</i>. Assim, o sistema operacional do <i>Host</i>
+oferece um ambiente virtual aos <i>Guests</i>. Dessa forma, os <i>Guests</i>
+possuem isolamento ao passo que as requisições oriundas de seu kernels e
+processos (processamento, acesso a memória, dispositivos), são recebidas pelo
+kernel do <i>Host</i> e então encaminhadas ao <i>hardware</i>.
+
+    Na virtualização em nível de sistema operacional, os <i>Guests</i> não
+possuem kernel próprio, sendo o isolamento criado pelo kernel do <i>Host</i>
+que atende diretamente as requisições dos <i>Guests</i>. Apesar dos
+<i>Guests</i> poderem possuir seus próprios sistemas de arquivos, endereços
+IP e configurações de <i>software</i>, o isolamente entre eles é comparado
+ao isolamento entre processos em execução por usuários diferentes.
+
+    Nas demais formas de virtualização existe um alto nível de isolamento,
+comparável ao isolamento existente entre duas máquinas físicas não
+virtualizadas. Já nesta arquitetura, os <i>Guests</i> são contâiners de
+processos a nível de usuário e não uma instância completa do sistema
+operacional. Este fraco isolamento oferece poucos recursos de gerência
+sobre as máquinas vitualizadas, em muitos casos, permitindo a degradação da
+performace do sistema por apenas um <i>Guest</i>.
+
+    Esta técnica depende além da mesma arquitetura (ex: X86) mas também do mesmo
+sistema operacional. São exemplos desta tecnologia: Linux-VServer, OpenVZ,
+BSD Jails e Solaris Contâiners.
+
+<figura>
+    <tamanho>0.9</tamanho>
+    <arquivo>imgs/virt-sistema-operacional</arquivo>
+    <legenda>Virtualização via sistema operacional</legenda>
+    <nome>fig:virt-sistema-operacional</nome>
+</figura>
+
+<subsecao>Hypervisor</subsecao>
+
+    O <i>Hypervisor</i> é o <i>core</i> do processo de virtualização, seu
+código pode fazer parte do kernel do <i>Host</i> ou ser um kernel
+especializado que é inicializado pelo carregador de boot. O Xen é um exemplo
+de <i>Hypervisor</i> que trata-se de um kernel especializado.
+
+    No caso do <i>Hypervisor</i> ser implementado através de um kernel
+especializado, sua execução pelo carregador de boot é seguida da
+inicialização de um <i>Guest</i> especial, também chamado de <i>Guest</i>
+<b>privilegiado</b>, que terá acesso à gerência de suas funcionalidades,
+como a especificação de uso de processadores e memória pelos demais
+<i>Guests</i>.
+
+    O kernel especializado do <i>Hypervisor</i> não provê todas as
+funcionalidades de um sistema operacional, mas apenas recursos essenciais
+intrínsecos ao funcionamento do <i>hardware</i>, como a gerência do processador
+e do barramento de dispositivos, além do controle das interrupções e de
+acesso a memória. Assim, o <i>Hypervisor</i> não possui drivers de
+dispositivos, poder que é delegado ao <i>Guest</i> especial que terá
+acesso ao barramento de dispositivos e interrupções.
+
+    O termo <b>privilégio</b> é referente ao controle do <i>Hypervisor</i>
+e ao acesso aos dispositivos físicos. O <i>Guest</i> <b>privilegiado</b>
+pode alterar como <i>Hypervisor</i> atua sobre os <i>Guests</i>, como por
+exemplo fazendo com que um determinado <i>Guest</i> tenha prioridade de
+processamento. Os demais <i>Guests</i> não tem acesso ao controle do
+<i>Hypervisor</i>, sendo chamados de <i>Guests</i> sem privilégios
+(<i>unprivileged</i>), ou <i>Guests</i> comuns, ou simplesmente
+<i>Guests</i>.
+
+    Outras funcionalidades gerenciáveis pelo <i>Guest</i> <b>privilegiado</b>
+são: a capacidade de iniciar, parar, salvar estado e migrar os demais
+<i>Guests</i> entes <i>Hosts</i>, dentre outras. O <i>Guest</i> privilegiado
+não pode ser salvo, parado ou migrado.
+
+<subsecao>Virtualização e a arquitetura X86</subsecao>
+
+    A arquitetura X86 possui inicialmente 4 modos de isolamento, que vai do
+menos restrito (nível 0) até o mais restrito (nível 3). Estes modos são chamados
+de anéis de proteção, e este conceito permite que um código em execução tenha
+seu acesso restrito a uma determinada área de memória.
+
+    Um processo em execução no <i>nível 0</i>, pode executar outro processo e
+colocá-lo em um nível mais restrito (1, 2 ou 3) e determinar a área de memória
+que este pode utilizar. Caso o processo criado seja colocado em nível 1 ou 2
+(o que não é comum), este ainda pode iniciar outro processo em um nível mais
+restrito. Os processos de <i>nível 3</i> não podem controlar, a nível de anel
+de isolamento, outros processos. Já os processos em <i>nível 0</i> tem acesso
+a toda memória do RAM do <i>hardware</i>. Processos de mesmo nível, se
+permitido, podem ter acesso a uma área de memória compartilhada, e este é o
+princípio das <i>Threads</i>.
+
+    Tipicamente existem dois tipos de códigos em execução: processos do kernel
+([kjounald], [kthreadd], [ksoftirqd], etc) e processos a nível de usuário
+(/sbin/init, /usr/sbin/rsyslogd, /usr/sbin/cron, etc).
+
+    Quando não há virtualização em uso, o kernel do sistema operacional é
+executado com <i>nível 0</i> e os processos a nível de usuário são executados
+com <i>nível 3</i>. Assim, o kernel tem acesso a área de memória dos processos
+a nível de usuários, mas estes não tem acesso a área de memória do kernel.
+
+    A paravirtualização baseia-se na idéia de fazer com que o <i>Hypervisor</i>
+seja executado no <i>nível 0</i> e os kernels dos <i>Guests</i> em <i>nível
+1</i>, ocorrendo o isolamento entre os <i>Guests</i>.
+

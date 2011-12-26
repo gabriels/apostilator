@@ -1,0 +1,23 @@
+<capitulo>Xm</capitulo>
+
+	Introdução ao capítulo de exemplo.
+
+<subsecao>Iniciando um <i>Guest</i></subsecao>
+
+xxxxxxxxxxxxxxx
+
+
+<subsubsecao>Exemplo de subseção do capítulo</subsubsecao>
+
+	Introdução a subseção de exemplo.
+
+<subsecao>Exemplo de segunda seção do capítulo</subsecao>
+
+	Introdução a segunda seção de exemplo.
+
+	Exemplo de comando:
+
+<comando>
+# echo xxxx > /dev/null
+</comando>
+

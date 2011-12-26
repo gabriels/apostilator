@@ -1,0 +1,290 @@
+<capitulo>Introdução ao Xen</capitulo>
+
+    O Xen é um <b>Hypervisor</b> ou <b>monitor de máquina virtual</b>,
+trata-se um kernel especializado de cerca de 400 Kbytes que implementa a
+<b>paravirtualização</b> (<b>PV</b>) e a <b>virtualização completa</b>
+(<b>HVM</b>), e fornece a capacidade de dividir os recursos do hardware entre
+as máquinas virtuais. Essa divisão é configurável através de <i>Hypercalls</i>
+(<i>hyper</i> chamadas), que são chamadas de sistema especiais para esta
+finalidade.
+
+    As <i>Hypercalls</i> são utilizadas para definir a quantidade de recursos,
+como tempo de processamento e quantidade de memória, que cada <i>Guest</i>
+pode utilizar, assim como, para ordenar o <i>Hypervisor</i> quanto a
+inicialização, desligamento, salvamento, restauração, migração de máquinas
+virtuais ou qualquer outra operação disponível. A definição de recursos ocorre
+na inicialização do <i>Guest</i>, mas também pode ser realizada em tempo de
+execução, ou seja, com a máquina virtual ligada (<i>online</i>, em produção),
+como a inserção de interfaces de rede, áreas de disco ou a permissão de uso de
+mais tempo de processamento.
+
+    As <i>Hypercalls</i> só são aceitas quando executadas a partir do
+<i>Guest</i> especial, que é chamado de <b>dom0</b> (<i>domain zero</i>,
+<i>privileged domain</i>). O <i>dom0</i> é normalmente o sistema operacional
+originalmente instalado na máquina física, que após a instalação do Xen passa
+a ser utilizado para o controle do <b>Hypervisor</b>.
+
+<figura>
+  <tamanho>0.9</tamanho>
+  <arquivo>imgs/xen-domains</arquivo>
+  <legenda>Guests (hóspedes)</legenda>
+  <nome>fig:xen-domains</nome>
+</figura>
+
+    As <i>Hypercalls</i> são implementadas pelo software (serviço)
+<b>Xend</b>, e este inicia serviços de rede e <i>unix sockets</i> para
+que <i>clients</i>, como o <b>xm</b>, enviem as ordens de controle a serem
+encaminhadas ao <i>Hypervisor</i>. Estas ordens foram exemplificadas no
+parágrafo anterior.
+
+    O Xend implementa alguns protocolos de rede que são utilizados pelos
+<i>Xen clients</i> para o envio das ordens de controle a serem
+encaminhadas ao <i>Hypervisor</i>. Os principais protocolos são o Xen-API (TCP
+9363, TCP-SSL 9367) e um protocolo também baseado em XML-RPC (TCP 8006) que
+tende a ser descontinuado em prol do Xen-API.
+
+    O Xend armazena informações sobre os <i>Guests</i> em uma base de dados
+local gerenciada pelo serviço (<i>daemon</i>) <b>XenStored</b>.
+
+<figura>
+  <tamanho>0.9</tamanho>
+  <arquivo>imgs/xen-controle-do-hypervisor</arquivo>
+  <legenda>Gerenciamento do Hypervisor</legenda>
+  <nome>fig:xen-controle-do-hypervisor</nome>
+</figura>
+
+<subsecao>Xen Hypervisor</subsecao>
+
+    O processo de inicialização do <i>Xen Hypervisor</i>, uma análise sobre
+a divisão dos recursos entre os sistemas <i>Guests</i>, e detalhes sobre a
+virtualização completa serão abordados nesta seção.
+
+<subsubsecao>Xen Hypervisor e o processo de boot</subsubsecao>
+
+    O <i>Xen Hypervisor</i> é inicializado pelo carregador de boot
+semelhantemente a um kernel comum, entretanto após ser executado, este
+inicializa um <i>Guest</i> especial, chamado <b>dom0</b> (<i>domain zero</i>,
+<i>privileged domain</i>). A terminologia <b>domínio</b> (<i>domain</i>) é
+tipicamente preferida no contexto do Xen, é trata-se de um sinônimo de
+<i>Guest</i>.
+
+    O kernel do domínio privilegiado (<i>dom0</i>) não é diferente dos kernels
+dos outros domínios (<i>domU</i>, <i>unprivileged domain</i>); o que o faz
+especial é ter sido inicializado pelo <i>Hypervisor</i> em tempo de <i>boot</i>
+da máquina física. Somente o primeiro domínio inicializado é privilegiado, e
+este é chamado de <i>dom0</i>, embora seja possível delegar autoridade sobre um
+dispositivo a um domínio sem privilégios (um <i>Guest</i> qualquer).
+
+    Todavia, para o suporte a <i>paravirtualização</i>, o kernel dos domínios
+(<i>dom0</i> ou qualquer <i>domU</i>) necessita implementar suporte
+específico para a comunicação com o <i>Xen Hypervisor</i>, isto faz com que
+este kernel funcione apenas caso o <i>Xen Hypervisor</i> esteja ativo. Assim,
+um kernel com suporte ao <i>Xen</i> não é capaz de ser inicializado pelo
+carregador de boot, mas apenas pelo <i>Hypervisor</i>, seja como <i>dom0</i>
+(domínio privilegiado) ou <i>domU</i> (qualquer outro domínio).
+
+    Da nesma forma que um kernel Linux, o <i>Hypervisor</i> também possui
+parâmetros configuráveis via carregador de boot, os quais serão abordados
+no próximo capítulo.
+
+<figura>
+  <tamanho>0.9</tamanho>
+  <arquivo>imgs/xen-boot</arquivo>
+  <legenda>Boot de um sistema Xen</legenda>
+  <nome>fig:xen-boot</nome>
+</figura>
+
+
+<subsubsecao>Xen Hypervisor e a divisão dos recursos</subsubsecao>
+
+    O <i>Hypervisor</i> é <i>core</i> do processo de virtualização, e é
+responsável pelo controle dos recursos do hardware e tem a capacidade de
+impor limites diferenciados ao sistemas <i>Guests</i>.
+
+    Estes limites ocorrem de forma específica para os diversos componentes
+do computador, como processamento, memória e dispositivos de armazenamento,
+etc, e são configuráveis tanto no momento da inicialização dos domínios
+quanto com estes em execução (<i>online</i>, em produção).
+
+    O <b>acesso aos processadores</b> é controlado por algortimos de agendamento que
+determinam a divisão da capacidade de processamento entre os domínios.
+
+    Desde as primeiras versões do Xen vários agendadores já foram
+implementados, mas atualmente os mais utilizados são os agendadores
+<b>CREDIT</b> e <b>SEDF</b>. O primeiro permite a atribuição de pesos a cada
+domínio, aqueles que tiverem maior peso terão, proporcionalmente ao
+valor do peso, maior tempo para uso do <i>CPU</i>; este é o algoritmo padrão
+das versões recentes do Xen.
+
+    O segundo é baseado no conceito <i>Earliest deadline first</i> - <i>EDF</i>
+<citar>EDFsched</citar> que implementa uma fila com prioridades em que cada
+elemento possui um tempo limite para entrar em execução, os processos próximos
+de expirarem tem maior prioridade de execução; o algoritmo SEDF foi superado
+pelo CREDIT, mas ainda esta disponível para utilização.
+
+    O <b>acesso a memória</b> é baseado nos anéis de proteção/isolamento
+da arquitetura X86, sendo o <i>Hypervisor</i> executado no anél de nível
+mais baixo, ele pode determinar a área de memória que deve ser imposta
+pelo hardware (convencional X86) para cada domínio.
+
+    A memória RAM, diferentemente dos processadores, não é um recurso
+compartilhável. A quantidade disponibilizada à cada <i>Guest</i> é de
+acesso exclusivo ao referido <i>Guest</i>. Assim, não é possível cerder
+mais memória do que a quantidade efetiva instalada no computador, sendo que, a
+quantidade total de memória RAM é o principal limitador da quantidade de
+máquina virtuais em execução em determinada máquina física.
+
+    O <b>acesso a dispositivos</b> é limitado pelo <i>Hypervisor</i>
+ocultando o barramento de periféricos, e provendo aos domínios sem
+privilégios (todos exceto o <i>dom0</i>) o acesso somente aos dispositivos
+virtuais especificados.
+
+    Os dipositivos de armazenamento normalmente não são compartilhados entre
+os sistemas <i>Guests</i>, mas isto é possível desde que seja utilizado um 
+sistema de arquivos que permita acesso simultâneo como o GFS e o OCFS2.
+
+    Em geral, uma determinada área de disco (arquivo de imagem, partição,
+volumes lógicos, iSCSI, AoE, etc) são virtualizados como partições ou discos,
+dessa forma, uma área de disco qualquer acessível através do <i>dom0</i>
+tornar-se um disco do tipo Xen (xvda) para o <i>Guest</i>, sendo que o
+<i>Guest</i> fica limitado somente a área de disco especificada.
+
+    Os dispositivos de rede normalmente são agrupados em <i>bridge</i>,
+fazendo com que a interface de rede real seja utilizada por diversos <i>Guest</i>.
+
+    O <i>Xen Hypervisor</i> também possibilita que um dispositivo real seja
+acessado diretamente por um determinado <i>Guest</i>, como é necessário no
+caso das placas de comunicação digital ISDN/R2 utilizadas por sistemas de
+PABX, como o Asterisk.
+
+    Entretanto, deve-se ter ciência que os dispositivos que implementam DMA
+(<i>direct memory access</i>) podem ter acesso a áreas indevidas de memória
+(de outros <i>Guests</i>, inclusive do <i>dom0</i>). Todavia isto não ocorrerá
+no funcionamento normal do dispositivo, mas apenas em caso de defeito físico,
+de projeto ou no driver. Na maioria dos casos, isso não deve ser motivo de
+preocupação, mas caso ocorram eventuais instabilidades na máquina, esta
+questão deve ser considerada como a principal origem do problema.
+
+<subsubsecao>Xen Hypervisor e a arquitetura X86</subsubsecao>
+
+    Como já comentado, o <i>Hypervisor</i> implementa <b>paravirtualização</b>
+e a <b>virtualização completa</b>. A <b>paravirtualização</b> faz com que os
+kernels dos domínios sejam executados em nível 1 de proteção e os processos a
+nível de usuário em nível 3. Assim, o <i>Hypervisor</i> será executado em nível
+0, e devido aos anéis de proteção do hardware X86 é possível realizar o
+isolamento entre as máquinas virtuais.
+
+    O Xen implementa a virtualização completa utilizando-se de um recurso
+especial disponível em alguns processadores X86 <citar>HVMcompatible</citar>.
+Com as tecnologias VT-x da Intel (flag <b>vmx</b>) e AMD-V da AMD (flag
+<b>svm</b>) o hardware passou a suportar mais um nível de isolamento que é
+chamado de raiz e não-raiz, na prática é como se fosse criado o nível '-1',
+sendo que os níveis agora vão de -1 a 3.
+
+    Com isto, o <i>Hypervisor</i> é executado em nível -1 (nível raiz) de
+proteção/isolamento, e os kernels dos domínios serão executados em nível 0.
+Isto implica na capacidade de virtualização sem a necessidade de alterações
+nos kernels dos domínios, ou seja, a <b>virtualização completa</b>.
+
+<subsubsecao>Xen Hypervisor e o padrão HVM</subsubsecao>
+
+    As tecnologias VT da Intel e AMD-V da AMD possuem muitas características
+comuns, assim, o padrão HVM surgiu da unificação das funções de acesso as
+funcionalidades providas por estes processadores. Dessa forma, o termo HVM é
+utilizado no Xen quando se utiliza virtualização completa através desta
+tecnologia.
+
+<subsecao>Domain-0</subsecao>
+    
+    O <i>Xen Hypervisor</i> não possui drivers para acesso aos dispositivos,
+assim, não tem a função de converter a comunicação dos domínios direcionada
+aos dispositivos virtuais para os dispositivos reais. Esta função é delegada
+ao domínio privilegiado (<b>dom0</b>).
+
+    O Hypervisor recebe as requisições dos domínios e repassa ao domínio
+<b>dom0</b> aquelas referentes ao acesso a dispositivos, como placas de rede,
+controladoras SCSI, etc. Já as requisições de acesso a memória e
+processamento são atendidas diretamente pelo Hypervisor e encaminhadas ao
+hardware.
+
+    O domínio privilegiado <b>dom0</b> possui duas funções básicas, a
+primeira  é a capacidade de prover acesso aos dispositivos reais aos
+demais domínios <b>domU(s)</b>, a segunda é enviar comandos de controle
+(<i>hypercalls</i>) ao <i>Hypervisor</i>, como para inicializar ou desligar um
+domínio qualquer.
+
+<figura>
+  <tamanho>0.9</tamanho>
+  <arquivo>imgs/xen-gerencia-do-hardware</arquivo>
+  <legenda>Funcionalidades do Hypervisor e Dom0</legenda>
+  <nome>fig:xen-gerencia-do-hardware</nome>
+</figura>
+
+    O diagrama <ref>fig:xen-gerencia-do-hardware</ref> contém o fluxo dos
+dados originados nos domínios comuns (<i>domU</i>) até o hardware, o retorno
+dos dados é equivalente a inversão de todas as setas deste diagrama.
+
+<subsubsecao>Xend</subsubsecao>
+
+    O Xend é um processo executado no domínio privilegiado (<i>dom0</i>),
+sendo este o único domínio capaz de emitir <i>Hypercalls</i> aceitas pelo
+<i>Hypervisor</i>. O Xend aguarda requisições oriundas de suas interfaces
+de comunicação: <i>unix socket</i> (/var/lib/xend/xend-socket), XML-RPC
+(TCP 8006) e API-Server (TCP 9363 / TCP-SSL 9367).
+
+    As requisições tem objetivo alterar os recursos disponibilizados para os
+demais domínios, assim como inicializá-los, desligá-los, etc. O Xend utiliza
+o XenStored para armazenar informções que refletem as configurações de cada
+domínio. Ou seja, ao inicializar um novo domínio, o Xend envia a
+<i>Hypercall</i> específica para esta funcionalidade e caso esta seja
+atendida com sucesso pelo <i>Hypervisor</i>, os recursos cedidos (oriundos do
+arquivo de configuração) para este domínio são gravados em uma base local
+(/var/lib/xenstored/tdb) que é gerenciada pelo processo XenStored.
+
+    O Xend permite a recepção simultânea de requisições através de suas
+interfaces de comunicação. Estas são serializadas e repassadas ao
+<i>Hypervisor</i> através da respectiva <i>Hypercall</i>, assim como,
+armazena informações sobre as modificações no comportamento do
+<i>Hypervisor</i> realizada por cada requisição. 
+
+    Dessa forma, as informações gerenciadas pelo XenStored refletem o
+comportamento atual do <i>Hypervisor</i> sobre os <i>Guests</i>. Ou seja, se
+o <i>Guest</i> esta ligado ou desligado, a quantidade de memória,
+configurações do agendador de uso de CPU, e todas as demais configurações das
+funcionalidades aplicadas pelo <i>Hypervisor</i>. Assim, quando o <i>Host</i> é
+inicializado (máquina física ligada ou reiniciada), o conteúdo da base do
+XenStored pode ser descartado.
+
+<subsubsecao>XenStored</subsubsecao>
+<nome>sec:intro-xen-xenstore</nome>
+
+    As informações armazenadas pelo <i>XenStored</i> são disponibilizadas
+através do <i>unix socket</i> <i>/var/lib/xend /xend-socket</i> disponível no
+<i>dom0</i>; através de <i>syscalls</i> para o acesso a partir de qualquer
+domínio, sendo que os <i>domUs</i> possuem acesso somente uma parte da base;
+ou diretamente no arquivo <i>/var/lib/xenst ored/tdb</i>, procedimento que não
+é necessário devido as ferramentas existentes para a manipulação desta base
+de dados.
+
+    O formato da base de dados é o <i>Trivial Database - TDB</i>
+<citar>TDB</citar> que é da família das bases <i>Database Manager - DBM</i>,
+assim como o <i>Berkeley DB - BDB</i>, o <i>GNU Database Manage - GDBM</i> e
+o <i>Java Database Manage - JDBM</i>. O <i>TDB</i> foi escrito pelo projeto
+Samba e é semelhante aos GDBM e BDB, exceto que permite escrita simultânea e
+utiliza <i>lock</i> de registro interno a base de dados para controlar
+esta concorrência.
+
+    O formato <i>TDB</i> armazena os dados no clássico estilo
+<i>chave-valor</i> (chamado de registro), implementando adicionalmente uma
+relação hierarquica entres as chaves. Assim, trata-se de conceito semelhante
+ao utilizado pelo protocolo LDAP e nos sistemas de arquivos. Existindo um
+registro principal/raiz, e os registros ligados a este que podem possuir
+outros registros filhos, refletindo assim uma árvore de registros.
+
+
+
+
+
+
+
+

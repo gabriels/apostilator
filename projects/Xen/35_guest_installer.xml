@@ -1,0 +1,335 @@
+<capitulo>Guests (domU)</capitulo>
+
+    Um sistema <i>Guest</i> comum (<b>domU</b>) ...
+
+<subsecao>Áreas de disco</subsecao>
+
+    Existem vários métodos que podem ser utilizados para o armazenamento dos
+sistemas operacionais <i>Guests</i>, como arquivos de imagem, partições de
+disco, volumes lógicos em discos locais ou áreas em <i>storages</i>, assim
+como, armazenamento em rede através iSCSI ou ATA-over-Ethernet (AoE), além
+dos sistemas de arquivo de rede NFS e CIFS/SMB.
+
+<subsubsecao>Arquivos de imagem de partição</subsubsecao>
+
+    Escolha um diretório para o armazenamento dos arquivos de imagem. Os
+exemplos abaixo são referentes ao diretório /xen, e criam dois arquivos de
+imagem, um de 4Gb e outro de 256Mb, ajuste o parâmetro <i>seek</i> para sua
+necessidade, use como exemplo os valores: 4000 = 4Gb e 256 = 256Mb.
+
+    Os arquivos criados são do tipo <i>sparse</i> e não ocupam o espaço até
+ser realmente utilizado, todavia não distribua espaço além do tamanho da
+partição do diretório /xen.
+
+<comandoNumerado>
+    # mkdir /xen
+    # dd if=/dev/zero of=/xen/guest1-root.img bs=1024k seek=4000 count=1
+    # dd if=/dev/zero of=/xen/guest1-swap.img bs=1024k seek=256  count=1
+
+    # mkfs.ext3 -F /xen/guest1-root.img
+    # mkswap /xen/guest1-swap.img
+
+    # mkdir /mnt/guest1
+    # mount -o loop /xen/guest1-root.img /mnt/guest1
+
+    ## Comandos de instalação do sistema operacional Guest em /mnt/guest1
+
+    # umount /mnt/guest1
+    # rmdir /mnt/guest1
+</comandoNumerado>
+
+<subsubsecao>Arquivos de imagem de disco</subsubsecao>
+
+ xxxxxxxxxxx
+
+<subsubsecao>Partições de disco</subsubsecao>
+
+    Considerando um disco /dev/sdb de 10Gb, que já possui duas partições em uso,
+sendo /dev/sdb1 de 256Mb e /dev/sdb2 de 4500Mb:
+
+<comando>
+    # fdisk -l /dev/sdb
+/dev/sdb1               1         496      249952+  82  Linux swap / Solaris
+/dev/sdb2   *         497        9215     4394376   83  Linux
+</comando>
+
+    Crie ao menos duas novas partições para serem disponibilizadas a nova máquina
+<i>Guest</i>.
+
+<comando>
+/dev/sdb5            9216        9711      249952+  82  Linux swap / Solaris
+/dev/sdb6            9712       18430     4394344+  83  Linux
+</comando>
+
+<comandoNumerado>
+    # mkswap /dev/sdb5
+    # mkfs.ext3 /dev/sdb6
+
+    # mkdir /mnt/guest1
+    # mount /dev/sdb6 /mnt/guest1
+
+    ## Comandos de instalação do sistema operacional Guest em /mnt/guest1
+
+    # umount /mnt/guest1
+    # rmdir /mnt/guest1
+</comandoNumerado>
+
+<subsubsecao>Volumes lógicos</subsubsecao>
+
+    Considerando um disco /dev/sdc de 10Gb, que já possui duas partições em uso,
+sendo /dev/sdc1 de 256Mb e /dev/sdc2 de 4500Mb:
+
+<comando>
+    # fdisk -l /dev/sdb
+/dev/sdc1               1         496      249952+  82  Linux swap / Solaris
+/dev/sdc2   *         497        9215     4394376   83  Linux
+</comando>
+
+    Crie a partição /dev/sdc3 como <i>Linux LVM</i> (8E), verifique o
+resultado do comando <i>fdisk</i>:
+
+<comando>
+/dev/sdc3            9216       20843     5860512   8e  Linux LVM
+</comando>
+
+    Verifique a instalação dos utilitários de configuração de partições LVM:
+
+<comando>
+    # aptitude install lvm2
+</comando>
+
+    Inicialize a nova partição LVM:
+
+<comando>
+    # pvcreate /dev/sdc3
+  Physical volume "/dev/sdc3" successfully created
+</comando>
+
+    Inicialize um grupo de volumes:
+
+<comando>
+    # gvcreate vg_xen /dev/sdc3
+  Volume group "vg_xen" successfully created
+</comando>
+
+    Inicialize ao menos dois volumes lógicos:
+
+<comando>
+    # lvcreate -L 4Gb -n guest1.root vg_xen
+  Logical volume "guest1.root" successfully created
+
+    # lvcreate -L 256Mb -n guest1.swap vg_xen
+  Logical volume "guest1.swap" successfully created
+</comando>
+
+<comandoNumerado>
+    # mkswap /dev/vg_xen/guest1.swap
+    # mkfs.ext3 /dev/vg_xen/guest1.root
+
+    # mkdir /mnt/guest1
+    # mount /dev/vg_xen/guest1.root /mnt/guest1
+
+    ## Comandos de instalação do sistema operacional Guest em /mnt/guest1
+
+    # umount /mnt/guest1
+    # rmdir /mnt/guest1
+</comandoNumerado>
+
+<subsecao>Instalação do sistema operacional de Guests PV</subsecao>
+
+<subsubsecao>Debian</subsubsecao>
+
+    A instalação dos sistemas <i>Guests</i> ocorre através de ferramentas
+específicas que instalam automaticamente os pacotes básicos em uma partição.
+O utilitário <i>debootstrap</i> é utilizado para criar-se a estrutura do
+sistema de arquivos raiz do sistema. Assim, o procedimento a segui realizada
+a instalação do <i>debootstrap</i>:
+
+<comando>
+    # aptitude install debootstrap
+</comando>
+
+    Monte área de disco em /mnt/pvm-temp
+
+<comando>
+    # debootstrap lenny /mnt/pvm-temp
+</comando>
+
+    Desmonte /mnt/pvm-temp
+
+<subsecao>Configuração pós-instalação do sistema operacional de Guests PV</subsecao>
+
+xxxxxxxxxx xxxxxxx xxxxxxxx
+
+<comando>
+xxxxxxxxxxxxxxxx
+</comando>
+
+<subsubsecao>xxx Kernel com suporte ao Xen Hypervisor</subsubsecao>
+
+Este procedimento não é necessário, visto pode-se utilizar o mesmo kernel
+utilizado pelo dom0. No
+
+É necessário a utilização do PyGRUB para carregar kernel armazenadas dentro
+das áreas de disco dos <i>Guests</i>.
+
+<comandoNumerado>
+.......tirar cp -a /boot/vmlinuz-2.6.26-2-xen-686 /mnt/pvm-temp/boot
+.......tirar cp -a /boot/initrd.img-2.6.26-2-xen-686 /mnt/pvm-temp/boot
+.......tirar cp -a /boot/System.map-2.6.26-2-xen-686 /mnt/pvm-temp/boot
+.......tirar cp -a /lib/modules/2.6.26-2-xen-686 /mnt/pvm-temp/lib/modules
+</comandoNumerado>
+
+<subsubsecao>/etc/fstab</subsubsecao>
+
+<comandoNumerado>
+# /etc/fstab: static file system information.
+#
+# file system   mount point     type    options             dump    pass
+proc            /proc           proc    defaults            0       0
+/dev/xvda2      /               ext3    errors=remount-ro   0       1
+/dev/xvda1      none            swap    sw                  0       0
+/dev/xvdb       /media/cdrom0   udf,iso9660 user,noauto     0       0
+/dev/xfd0       /media/floppy0  auto    rw,user,noauto      0       0
+</comandoNumerado>
+
+<subsubsecao>/etc/hostname</subsubsecao>
+
+<comando>
+echo guest1 ;gt; /etc/hostname
+</comando>
+
+<subsubsecao>/etc/hosts</subsubsecao>
+
+<comando>
+127.0.0.1       localhost
+</comando>
+
+<subsecao>Definição de recursos</subsecao>
+
+xxxx xxxxxxxxx xxxxxxxxxxx
+
+<subsubsecao>Opções comuns de PV (kernel no dom0)</subsubsecao>
+
+xxxxxx xxxxxx xxxxxxxxxxxxx
+
+<comando>
+# default options
+memory = 256
+name = "guest1-pvm"
+vif = ['']
+
+# kernel Xen at dom0
+kernel = "/boot/vmlinuz-2.6.26-2-xen-686"
+ramdisk = "/boot/initrd.img-2.6.26-2-xen-686"
+root = '/dev/xvda2 ro xencons=tty1'
+</comando>
+
+<subsubsecao>Opções comuns de PV (kernel no Guest)</subsubsecao>
+
+Requer que disco xvda e MBR do disco virtual configurado apropriadamente
+
+<comando>
+# default options
+memory = 256
+name = "guest1-pvm"
+vif = ['']
+
+# kernel Xen at domU
+bootloader = '/usr/lib/xen-3.2-1/bin/pygrub'
+</comando>
+
+
+<subsubsecao>Opções comuns de HVM</subsubsecao>
+
+Requer que disco xvda.
+
+<comando>
+# default options
+memory = "256"
+name = "guest1-hvm"
+vif = [ 'type=ioemu, bridge=eth0' ]
+
+# HVM options
+builder = "hvm"
+device_model = "/usr/lib/xen-3.2-1/bin/qemu-dm"
+kernel = "/usr/lib/xen-3.2-1/boot/hvmloader"
+boot="cda"
+
+# VNC options
+vnc=1
+vnclisten="192.168.0.1"
+</comando>
+
+vnclisten é um IP de dom0, acesso via xvncviewer
+
+<comando>
+disk = [ 'phy:/dev/vg_xen/guest1.hvm,ioemu:hda,w'
+</comando>
+
+<subsubsecao>Arquivo de imagem de partição</subsubsecao>
+
+<comando>
+# Disk options
+disk = [ 'file:/xen/guest1-swap.img,xvda1,w',
+         'file:/xen/guest1-root.img,xvda2,w' ]
+</comando>
+
+<comando>
+# Disk options
+disk = [ 'tap:aio:/xen/guest1-swap.img,xvda1,w',
+         'tap:aio:/xen/guest1-root.img,xvda2,w' ]
+</comando>
+
+<subsubsecao>Arquivo de imagem de disco</subsubsecao>
+
+<comando>
+# Disk options
+disk = [ 'file:/xen/guest1.img,xvda,w']
+</comando>
+
+<comando>
+# Disk options
+disk = [ 'tap:aio:/xen/guest1.img,xvda,w']
+</comando>
+
+<subsubsecao>Partições de disco</subsubsecao>
+
+<comando>
+# Disk options
+disk = [ 'phy:/dev/sdb5,xvda1,w',
+         'phy:/dev/sdb6,xvda2,w' ]
+</comando>
+
+<subsubsecao>Volumes lógicos</subsubsecao>
+
+<comando>
+# Disk options
+disk = [ 'phy:/dev/vg_xen/guest1.swap,xvda1,w',
+         'phy:/dev/vg_xen/guest1.root,xvda2,w' ]
+</comando>
+
+<subsubsecao>ATA-over-Ethernet</subsubsecao>
+
+<comando>
+# Disk options
+disk = [ 'phy:/dev/etherd/e1.1,xvda1,w',
+         'phy:/dev/etherd/e2.1,xvda2,w' ]
+</comando>
+
+<subsubsecao>NFS</subsubsecao>
+
+<comando>
+# Disk options
+root = /dev/nfs
+nfs_server = '172.16.1.1'
+nfs_root = '/export/guest1.root
+</comando>
+
+
+<subsecao>Instalação do sistema operacional de Guests HVM</subsecao>
+
+Instalação convencional. Especifique o arquivo de definição de recursos HVM,
+use a opção boot para determinar boot pela imagem do CD/DVD.
+
+
