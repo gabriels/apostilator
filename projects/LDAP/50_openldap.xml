@@ -1,0 +1,811 @@
+<capitulo>OpenLdap - Directory System Agent (DSA)</capitulo>
+
+    As configurações do DSA OpenLdap são centralizadas no arquivo
+<i>/etc/ldap/slapd.conf</i>, e na definição dos atributos através dos schemas
+no diretório <i>/etc/ldap/schema/</i>.
+
+    O arquivo de configuração possui diversos comentários que podem ser
+removidos para facilitar a visualização das opções como um todo. O quadro
+abaixo indica como visualizar o arquivo de configuração sem os comentários:
+
+<comando>
+    # grep -Ev '^#|^$' /etc/ldap/slapd.conf
+</comando>
+
+    O quadro abaixo indica como remover permanentemente os comentários do
+arquivo de configuração, assim como, preserva o conteúdo original no arquivo
+<i>/etc/ldap/slapd.conf.old</i>:
+
+<comando>
+    # sed -ri.old '/^#|^$/d' /etc/ldap/slapd.conf
+</comando>
+
+<subsecao>Configuração</subsecao>
+
+    O arquivo de configuração é dividido em: <b>seção Global</b> e <b>seção de
+Database</b>, sendo que esta pode ser repetida diversas vezes determinando a
+existência de diversas <i>databases</i>. O arquivo de configuração é comentado
+a seguir:
+
+<comandoNumerado>
+#
+# Global Configuration
+#
+
+# allow       bind_v2
+include       /etc/ldap/schema/core.schema
+include       /etc/ldap/schema/cosine.schema
+include       /etc/ldap/schema/nis.schema
+include       /etc/ldap/schema/inetorgperson.schema
+include       /etc/ldap/schema/asterisk.schema
+include       /etc/ldap/schema/dhcp.schema
+include       /etc/ldap/schema/radius.schema
+include       /etc/ldap/schema/samba.schema
+include       /etc/ldap/schema/dns.schema
+include       /etc/ldap/schema/local.schema
+pidfile       /var/run/slapd/slapd.pid
+argsfile      /var/run/slapd/slapd.args
+loglevel      256
+modulepath    /usr/lib/ldap
+moduleload    back_hdb
+sizelimit     unlimited
+timelimit     60
+tool-threads  1
+backend       hdb
+</comandoNumerado>
+
+<lista>
+<item/> <b>allow bind_v2</b>: permite conexões através do protocolo LDAP v2
+(RFC 3494). O DSA OpenLdap não é totalmente compatível com este padrão.
+O parâmetro <i>allow</i> aceita as seguintes opções, separadas por espaço:
+<i>bind_anon_cred</i>, <i>bind_anon_dn</i>, <i>update_anon</i>,
+<i>proxy_authz_anon</i>.
+
+<item/> <b>include</b>: informa arquivos que devem ser incluídos na
+configuração, em geral utilizado para a inserção de <i>schemas</i>.
+
+<item/> <b>pidfile</b>: informa um arquivo que o DSA deve armazenar seu PID no
+momento da inicialização.
+
+<item/> <b>argsfile</b>: informa um arquivo que o DSA deve armazenar os
+parâmetros utilizados em sua inicialização.
+
+<item/> <b>loglevel</b>: informa quais tipos de informações de log devem ser
+enviados ao <i>syslog</i>. Opção detalhada na seção<ref>LDAPlog</ref>.
+
+<item/> <b>modulepath</b>: informa o diretório que os módulos do OpenLdap
+estão armazenados.
+
+<item/> <b>moduleload</b>: carrega um módulo específico. Essencialmente os
+módulos provêm <i>backends</i> que implementam a forma de armazenamento dos
+dados (hdb, bdb, relay, ldap, meta, passwd, monitor, ...), e <i>overlays</i>
+que adicionam funcionalidades ao OpenLdap (syncprov, ppolicy, valsort,
+unique, memberof, ...).
+
+<item/> <b>sizelimit</b>: limita o número de registros retornados em uma
+consulta. O parâmetro <i>limits</i> pode ser utilizado para um limite mais
+seletivo.
+
+<item/> <b>timelimit</b>: limita o tempo para o processamento de uma pesquisa.
+O valor padrão é 3600 segundos. O parâmetro <i>limits</i> pode ser utilizado
+para um limite mais seletivo.
+
+<item/> <b>tool-threads</b>: número de <i>threads</i> utilizadas para
+atualização dos índices nas operações es escrita de atributos indexados. Use
+um valor menor ou igual ao número de <i>cores</i> de processamento.
+
+<item/> <b>backend</b>: parâmetro que define o formato da base, sendo
+normalmente a última opção da configuração global. O principal <i>backend</i>
+é o HDB que é baseado nas bases <i>Database Manager - DBM</i>, embora outros
+estejam disponíves. A lista completa com um breve resumo pode ser obtida
+através do comando: 
+</lista>
+
+<comando>
+    $ man slapd.backends
+</comando>
+
+    Os parâmetros globais disponíveis para utilização no <i>slapd.conf</i>
+podem ser obtidos através do comando:
+
+<comando>
+    $ man slapd.conf
+</comando>
+
+    Configuração da <i>database #1</i> do backend HDB:
+
+<comandoNumerado>
+#
+# Database #1 Configuration
+#
+database      hdb
+suffix        "o=Universidade Federal"
+#rootdn       "cn=ldap,o=Universidade Federal"
+#rootpw       goodpassword
+directory     "/var/lib/ldap"
+dbconfig      set_cachesize 0 2097152 0
+dbconfig      set_lk_max_objects 1500
+dbconfig      set_lk_max_locks 1500
+dbconfig      set_lk_max_lockers 1500
+index         objectClass eq
+lastmod       on
+cachesize     10000
+cachefree     1000
+checkpoint    512 10
+
+access        to attrs=userPassword,shadowLastChange
+              by dn="cn=Ldap Admin,o=Universidade Federal" write
+              by anonymous auth
+              by self write
+              by * none
+
+access        to dn.base=""
+              by * read
+
+access        to *
+              by dn="cn=Ldap Admin,o=Universidade Federal" write
+              by * read
+</comandoNumerado>
+
+<lista>
+<item/> <b>database</b>: determina o início da configuração de uma
+<i>database</i>. O bloco de configurações iniciado por <i>database</i>
+pode ser repetido para a utilização de várias bases. Procedimento
+demonstrado na seção<ref>LDAPbase</ref>.
+
+<item/> <b>suffix</b>: informa a <i>base DN</i> desta base.
+
+<item/> <b>rootdn</b>: informa um <i>DN</i> com permissão total sobre a
+base. Pode ser habilitado para alterar a senha do registro <i>cn=admin</i>.
+
+<item/> <b>rootpw</b>: informa a senha do <i>DN</i> com permissão total.
+Pode ser habilitado para alterar a senha do registro <i>cn=admin</i>.
+
+<item/> <b>directory</b>: diretório onde a base será armazenada.
+
+<item/> <b>dbconfig</b>: parâmetros de configuração do <i>backend</i> da base.
+São utilizados para a criação do arquivo DB_CONFIG. Opção detalhada na
+seção<ref>LDAPbackend</ref>.
+
+<item/> <b>index</b>: informa parâmetros de indexação. Opção detalhada na
+seção<ref>LDAPindex</ref>.
+
+<item/> <b>lastmod</b>: ativa os atributos operacionais <i>modifiersName</i>,
+<i>modifyTimestamp</i>, <i>creatorsName</i>, <i>createTimestamp</i>,
+<i>entryCSN</i> e <i>entryUUID</i>. É necessário para a replicação
+através do <i>overlay syncrepl</i>.
+
+<item/> <b>cachesize</b>: informa o número de registros que devem permanecer
+em memória. O ideal é manter todos os registros em memória. Para melhor
+performace use este valor sempre acima do número de registros existentes.
+
+<item/> <b>cachefree</b>: informa o número de registros que devem ser
+removidos da memória, caso o valor de <i>cachesize</i> seja alcançado.
+
+<item/> <b>checkpoint</b>: informa a periodicidade da operação de
+<i>checkpoint</i>. Esta operação grava qualquer registro ainda em memória para
+o disco e insere entradas de recuperação no log transação da base (armazenado
+no mesmo diretório da <i>database</i>). O primeiro argumento é a quantidade de
+dados em memória ainda não escritos em disco, e o segundo o tempo em minutos
+desde o último <i>checkpoint</i>. O que ocorrer primeiro iniciará o
+procedimento de <i>checkpoint</i>.
+
+<item/> <b>access</b>: ACLs de permissão de acesso aos registros. Opção
+detalhada na seção<ref>LDAPacl</ref>.
+</lista>
+
+    A lista completa dos parâmetros do <i>backend</i> HDB, disponíveis para
+utilização no <i>slapd.conf</i>, pode ser obtida através do comando:
+
+<comando>
+    $ man slapd-hdb
+</comando>
+
+<subsecao>Múltiplas bases</subsecao>
+<nome>LDAPbase</nome>
+
+    A criação de uma nova <i>database</i> dá-se pela repetição da seção de
+configuração de <i>database</i>. Assim, pode-se copiar o trecho referente a
+<i>database #1</i> realizando alterações nas opções <i>suffix</i>,
+<i>directory</i> e <i>access</i>, como indicado no quadro abaixo.
+
+<comandoNumerado>
+#
+# Database #2 Configuration
+#
+database      hdb
+suffix        "o=Empresa S/A"
+#rootdn       "cn=ldap,o=Empresa S/A"
+#rootpw       goodpassword
+directory     "/var/lib/ldap2"
+dbconfig      set_cachesize 0 2097152 0
+dbconfig      set_lk_max_objects 1500
+dbconfig      set_lk_max_locks 1500
+dbconfig      set_lk_max_lockers 1500
+index         objectClass eq
+lastmod       on
+cachesize     10000
+cachefree     1000
+checkpoint    512 10
+
+access        to attrs=userPassword,shadowLastChange
+              by dn="cn=Ldap Admin,o=Empresa S/A" write
+              by anonymous auth
+              by self write
+              by * none
+
+access        to dn.base=""
+              by * read
+
+access        to *
+              by dn="cn=Ldap Admin,o=Empresa S/A" write
+              by * read
+</comandoNumerado>
+
+    A seguir é necessário a inserção do registro raíz através do utilitário
+<i>slapadd</i>.
+
+<subsubsecao>O registro raiz da database #2</subsubsecao>
+
+    Deve-se criar o arquivo <i>root.ldif</i> contendo a especificação da nova
+raíz e do registro com permissão de escrita, sendo que o <i>hash</i> do
+atributo <i>userPassword</i> pode ser gerado com o comando <i>slappasswd</i>.
+
+<comandoNumerado>
+dn: o=Empresa S/A
+objectClass: organization
+o: Empresa S/A
+
+dn: cn=Ldap Admin,o=Empresa S/A
+objectClass: simpleSecurityObject
+objectClass: organizationalRole
+cn: Ldap Admin
+description: LDAP administrator
+userPassword: {SSHA}6Ng3TnWtsjw2jjt2NlBcSCJ+CoRVPMQ1
+</comandoNumerado>
+
+    Parar o <i>slapd</i>:
+
+<comando>
+    # /etc/init.d/slapd stop
+</comando>
+
+    Adicionar o registro inicial a base ldap:
+
+<comando>
+    # slapadd -b 'o=Empresa S/A' -l root.ldif
+</comando>
+
+    Gerar índices:
+
+<comando>
+    # slapindex -b 'o=Empresa S/A'
+</comando>
+
+    Alterar permissão da base ldap para o usuário "openldap":
+
+<comando>
+    # chown -R -v openldap: /var/lib/ldap2
+</comando>
+
+    Iniciar serviço slapd:
+
+<comando>
+    # /etc/init.d/slapd start
+</comando>
+
+    Testar a nova base:
+
+<comando>
+    $ ldapsearch -h ldap.example.com -LLL -b "o=Empresa S/A"
+                 -x -D "cn=Ldap Admin,Empresa S/A" -W
+</comando>
+
+<subsecao>TLS/SSL</subsecao>
+
+    O DSA OpenLdap fornece suporte a conexões criptografadas através de SSL
+com o protocolo <b>ldaps</b> ou sob TLS. Para isto, é necessário a
+configuração de um certificado digital e da respectiva chave privada. A
+configuração abaixo deve ser realizada no arquivo <b>/etc/ldap/slapd.conf</b>
+na seção de configuração global:
+
+<comando>
+# Global Configuration
+TLSCertificateFile /etc/ssl/cert/ldap.cer
+TLSCertificateKeyFile /etc/ssl/cert/ldap.key
+</comando>
+
+    A configuração acima é suficiente para ativar o suporte a TLS, todavia,
+para ativar o suporte a SSL é necessário indicar que o OpenLdap deve ativar
+a porta 636 (padrão), isto é realizado através daopção <b>-h</b> do
+<i>slapd</i>, ou indiretamente através da seguinte configuração no arquivo
+<b>/etc/default/slapd</b>:
+
+<comando>
+SLAPD_SERVICES="ldap://127.0.0.1:389/ ldaps://127.0.0.1:636/"
+</comando>
+
+    Pode-se também permitir recepção de conexões a partir de qualquer
+interface de rede, substituindo o endereço <i>127.0.0.1</i> por <i>0.0.0.0</i>
+como indicado:
+
+<comando>
+SLAPD_SERVICES="ldap://0.0.0.0:389/ ldaps://0.0.0.0:636/"
+</comando>
+
+    Todos os utilitários do protocolo LDAP como <i>ldapadd</i>,
+<i>ldapmodify</i>, etc, utilizam as preferências configuradas no arquivo
+<i>/etc/ldap/ldap.conf</i>. Para que estes possam validar a assinatura
+presente no certificado do DSA é necessário informar o caminho para o certificado
+da autoridade certificadora emissora. Assim, pode-se realizar a seguinte
+configuração no arquivo <b>/etc/ldap/ldap.conf</b>:
+
+<comando>
+TLS_CACERT      /etc/ssl/cert/University_CA.cer
+</comando>
+
+    A validação da assinatura depende do existência do <i>hostname</i>
+utilizado no certificado digital no serviço de DNS, em certos casos pode
+ser necessário desativar a validação do certificado, embora não seja
+recomendado pois não será possível validar a autenticidade do DSA:
+
+<comando>
+TLS_REQCERT      never
+</comando>
+
+<subsubsecao>Consultas com TLS</subsubsecao>
+
+    Os utilitários do protocolo LDAP podem ser utilizados através de TLS,
+através do parâmetro -Z. Para relizar uma consulta com TLS:
+
+<comando>
+    $ ldapsearch -x -Z -H ldap://localhost -b 'o=Universidade Federal'
+</comando>
+
+    Note que o <i>hostname</i> deve ser o mesmo utilizado no certificado.
+
+<subsubsecao>Consultas com SSL</subsubsecao>
+
+    A consulta sob SSL é realizada através da porta 636 (ldaps) conforme
+indicado no quadro a seguir:
+
+<comando>
+    $ ldapsearch -x -H ldaps://localhost -b 'o=Universidade Federal'
+</comando>
+
+    Note que o <i>hostname</i> deve ser o mesmo utilizado no certificado.
+
+<subsecao>Nível de log</subsecao>
+<nome>LDAPlog</nome>
+
+    Diversos níveis de log estão disponíveis no OpenLdap, conforme
+especificado na tabela a seguir:
+
+<tabela>{|l|l|l|}
+    <lh><th>Log level</th><col/><th>Log name</th><col/><th>Descrição</th>  </lh>
+    <tr>-1                <col/> any             <col/> ativar todos os logs de depuração </tr>
+    <tr>0                 <col/> ---             <col/> nenhum log de depuração </tr>
+    <tr>1                 <col/> trace           <col/> depurar a execução com trace </tr>
+    <tr>2                 <col/> packets         <col/> depurar manipulação de pacotes </tr>
+    <tr>4                 <col/> args            <col/> depurar a execução com trace com chamadas e argumentos de funções </tr>
+    <tr>8                 <col/> conns           <col/> controle de conexões </tr>
+    <tr>16                <col/> BER             <col/> exibir pacotes enviados e recebidos </tr>
+    <tr>32                <col/> filter          <col/> depurar processamento do ldap filter da consulta </tr>
+    <tr>64                <col/> config          <col/> depurar processamento do arquivo de configuração </tr>
+    <tr>128               <col/> ACL             <col/> depurar processamentos das ACLs</tr>
+    <tr>256               <col/> stats           <col/> exibir conexões, operações e resultados</tr>
+    <tr>512               <col/> stats2          <col/> exibir DN dos registros retornados na consulta</tr>
+    <tr>1024              <col/> shell           <col/> exibir comunicação com backends em shell</tr>
+    <tr>2048              <col/> parse           <col/> depurar parser de registro</tr>
+    <tr>16384             <col/> sync            <col/> depurar replicação</tr>
+    <legenda>OpenLdap log</legenda>
+    <nome>tab:ldap-log</nome>
+</tabela>
+
+    Embora a desativação do log possa permitir um ganho de desempenho, na
+maioria dos <i>hardware</i> disponíveis atualmente este tipo de procedimento
+não é necessário. Todavia, pode ser útil em <i>hardware</i> com baixa
+capacidade de processamento.
+
+    A opção de nível de log 256 é recomendada para a maioria dos
+casos. Pode-se ainda ativar mais de um nível de log, seja pelo número
+ou nome identificativo, conforme demonstrado a seguir:
+
+<comando>
+loglevel 256 512
+</comando>
+
+<comando>
+loglevel stats stats2
+</comando>
+
+<subsecao>Índices</subsecao>
+<nome>LDAPindex</nome>
+
+    Os índices ou indexação tem por objetivo o aumento de performace nas
+operações de pesquisa. Todavia, quanto mais índices criados, maior será uso de
+memória, e maior o tempo necessário para operações de escrita/atualização de
+registros, pois os índices também serão atualizados.
+
+    É recomendado a indexação de todos os atributos utilizados em pesquisas.
+Pesquisas que utilizam atributos não indexados geram entradas no log. Abaixo
+segue exemplo de mensagens de log para pesquisas baseadas no atributo
+<i>street</i>:
+
+<comandoNumerado>
+Nov 4 23:39:37 w slapd[6767]: <= bdb_substring_candidates: (street) not indexed
+Nov 4 23:39:23 w slapd[6767]: <= bdb_equality_candidates: (street) not indexed
+Nov 4 23:41:12 w slapd[6767]: <= bdb_approx_candidates: (street) not indexed
+</comandoNumerado>
+
+    Os índices são definidos pela opção <b>index</b> no arquivo de
+configuração, sendo seguido de uma lista de atributos e do tipo de indexação.
+Pode-se indexar cada atributo com um ou mais tipos, sendo que cada tipo está
+relacionado com a sintáxe de busca utilizada (<i>ldap filter</i>).
+
+    A configuração de índices é exemplificada no quadro abaixo:
+
+<comandoNumerado>
+index objectclass,entryCSN,entryUUID    eq
+index ou,cn,mail,uid                    eq,pres,sub
+index uidNumber,gidNumber,loginShell    eq,pres
+index sn                                eq,approx,sub
+</comandoNumerado>
+
+<lista>
+<item/> <b>pres</b>: a pesquisa requer que o registro <b>possua o atributo</b>
+especificado, independentemente de seu valor.
+
+<item/> <b>eq</b>: a pesquisa requer que o registro possua o <b>atributo com
+valor igual</b> ao especificado.
+
+<item/> <b>sub, subinitial, subfinal, subany</b>: a pesquisa requer que
+registro possua o <b>atributo parcialmente igual</b> (<i>like</i>) ao
+especificado.
+
+<item/> <b>approx</b>: a pesquisa requer que o registro possua uma <b>atributo
+com valor semelhante</b> ao o especificado.
+</lista>
+
+<tabela>{|l|l|}
+    <lh><th>Tipo de índice</th> <col/> <th>Exemplo de consulta</th></lh>
+    <tr>pres                    <col/> (uid=*)                </tr>
+    <tr>eq                      <col/> (uid=reinaldo)         </tr>
+    <tr>sub                     <col/> # índice equivalente as três opções abaixo juntas</tr>
+    <tr>subinitial              <col/> (uid=rei*)             </tr>
+    <tr>subfinal                <col/> (uid=*naldo)           </tr>
+    <tr>subany                  <col/> (uid=*ein*)            </tr>
+    <tr>approx                  <col/> (uid~=reynald)         </tr>
+    <legenda>Tipos de índice por tipo de consulta</legenda>
+    <nome>tab:ldap-index</nome>
+</tabela>
+
+    Ao adicionar ou remover atributos a serem indexados no arquivo de
+configuração, é necessário a realização da seguinte operação:
+
+<comandoNumerado>
+    # /etc/init.d/slapd stop
+    # slapindex -b o=Universidade Federal
+    # slapindex -b o=Empresa S/A
+    # chown -R -v openldap: /var/lib/ldap*
+    # /etc/init.d/slapd start
+</comandoNumerado>
+
+<subsecao>Backend HDB/BDB - dbconfig</subsecao>
+<nome>LDAPbackend</nome>
+
+    As configurações do <i>backend</i> HDB ou BDB <citar>BDBref</citar> são
+armazenadas no arquivo <b>DB_CONFIG</b> no diretório de cada <i>database</i>.
+As opções comumentes utilizadas são: <i>set_cachesize</i> (quantidade de dados
+em bytes armazenados em memória) <citar>BDBcache</citar> e as iniciadas por
+<i>set_lk_max</i> (quantidade de <i>locks</i>) <citar>BDBlock</citar>, como
+exemplificado a seguir:
+
+<comandoNumerado>
+    # cat /var/lib/ldap/DB_CONFIG
+</comandoNumerado>
+
+<comandoNumerado>
+set_cachesize 0 2097152 0
+set_lk_max_objects 1500
+set_lk_max_locks 1500
+set_lk_max_lockers 1500
+</comandoNumerado>
+
+    O arquivo <b>DB_CONFIG</b> é criado na primeira interação com a
+<i>database</i>, o que tende acontecer com a criação do registro raiz através
+do utilitário <i>slapdadd</i>. O arquivo é criado a partir das opções
+especificadas no parâmetro <i>dbconfig</i> na configuração de cada
+<i>database</i> do OpenLdap, conforme exemplo abaixo:
+
+<comandoNumerado>
+# Database Configuration
+dbconfig      set_cachesize 0 2097152 0
+dbconfig      set_lk_max_objects 1500
+dbconfig      set_lk_max_locks   1500
+dbconfig      set_lk_max_lockers 1500
+</comandoNumerado>
+
+    As configurações do <i>backend</i> podem ser realizadas no próprio
+arquivo <b>DB_CONFIG</b> ou alterando o arquivo <i>/etc/ldap/slapd.conf</i>.
+Como forma de centralizar a configuração no arquivo <i>slapd.conf</i> a
+segunda forma é recomendada. No exemplo abaixo, a quantidade de registros
+em memória é elevada para 256Mb e número de <i>locks</i> para 3000, conforme
+indicado:
+
+<comandoNumerado>
+# Database Configuration
+dbconfig      set_cachesize 0 268435456 0
+dbconfig      set_lk_max_objects 3000
+dbconfig      set_lk_max_locks   3000
+dbconfig      set_lk_max_lockers 3000
+</comandoNumerado>
+
+    Assim, para que o novo arquivo <b>DB_CONFIG</b> seja criado, é necessário
+que a <i>slapd</i> seja parado, e o arquivo atual removido, como indicado abaixo:
+
+<comandoNumerado>
+    # /etc/init.d/slapd stop
+    # rm /var/lib/ldap/DB_CONFIG
+    # /etc/init.d/slapd start
+    # cat /var/lib/ldap/DB_CONFIG
+</comandoNumerado>
+
+<comandoNumerado>
+set_cachesize 0 268435456 0
+set_lk_max_objects 3000
+set_lk_max_locks 3000
+set_lk_max_lockers 3000
+</comandoNumerado>
+
+<br/> 10cm
+
+<subsecao>Replicação (RFC4533)</subsecao>
+
+    A replicação é um recurso utilizado para manter cópias de <i>databases</i>
+em diferentes DSAs.
+
+<subsubsecao>Master</subsubsecao>
+
+    A replicação utiliza o módulo de <i>overlay syncprov</i> que deve ser
+carregado através da configuração global indicada em <i>l.2</i>. A ativação do
+suporte a replicação é uma configuração por <i>database</i>, conforme
+demonstrado em <i>l.5</i>, <i>l.6</i> e <i>l.7</i>:
+
+<comandoNumerado>
+# Global Configuration
+moduleload      syncprov
+
+# Database Configuration
+overlay syncprov
+syncprov-checkpoint 100 10
+syncprov-sessionlog 100
+</comandoNumerado>
+
+<subsubsecao>Slave</subsubsecao>
+
+    A configuração do <i>slave</i>:
+
+<comandoNumerado>
+# Database Configuration
+rootdn "cn=Ldap Admin,o=UFPA"
+# ...
+syncrepl rid=100 provider=ldap://ldap.example.com
+                 type=refreshOnly
+                 interval=00:00:02:00
+                 searchbase="o=Universidade Federal"
+                 bindmethod=simple
+                 binddn="cn=Ldap Admin,o=Universidade Federal"
+                 credentials=goodpassword
+</comandoNumerado>
+
+<lista>
+<item/> <b>provider</b>: informa o <i>URI</i> do DSA master.
+
+<item/> <b>type</b>: método de conexão para replicação. <i>refreshOnly</i>: a
+cada intervalo de tempo (<i>interval</i>) o DSA master é consultado por
+registros modificados desde a última sincronização. <i>refreshAndPersist</i>:
+a conexão ficará estabelecida, e o DSA master gerará notificações com os
+registros alterados.
+
+<item/> <b>interval</b>: utilizado pelo modo <i>refreshOnly</i>, e informa a
+periodicidade da consulta ao DSA master por registros modificados.
+
+<item/> <b>searchbase</b>: <i>base DN</i> para replicação, em geral a raiz de
+uma base do DSA master.
+
+<item/> <b>bindmethod</b>: ativa autenticação.
+
+<item/> <b>binddn</b>: <i>DN</i> para autenticação. Usuário com permissão de
+leitura aos atributos que devem ser replicados.
+
+<item/> <b>credentials</b>: senha do <i>DN</i> utilizado para autenticação.
+
+</lista>
+
+<br/> 10cm
+
+<subsecao>ACLs</subsecao>
+<nome>LDAPacl</nome>
+
+    As ACLs definem as permissões concedidas a cada operação do protocolo
+LDAP, seja a conexão autenticada ou não (anônima). O comportamento padrão é
+conceder permissão de leitura a conexões anônimas exceto a atributos de
+senha. Também garante-se permissão de escrita ao usuário padrão
+<i>cn=admin,o=OrganizacaoXYZ</i>.
+
+   O uso comum das ACLs tem objetivo de controlar o acesso a registros em
+operações de pesquisa (<i>search</i>) e modificação (<i>mod</i>), embora as
+ACLs possam atuar sobre as demais operações, como autenticação (<i>bind</i>)
+e comparação.
+
+   O processamento das ACLs é realizado de forma sequencial, da primeira
+até a última ACL, conforme descriminado no arquivo de configuração do OpenLdap.
+Este processamento ocorre no momento de cada operação do protocolo LDAP. O
+conceito fundamental do processamento das ACLs é que, ACLs posteriores não
+alteram permissões concedidas por ACLs já processadas. Assim, deve-se
+definir as ACLs mais específicas primeiramente.
+
+   No caso prático, uma regra geral é impedir o acesso ao atributo
+<i>userPassword</i>, assim, uma ACL inicial tem esta funcionalidade. Desta
+forma, ACLs posteriores que garantem permissão de leitura aos registros,
+aplicam-se a todos os atributos do registro, exceto o atributo
+<i>userPassword</i> que já teve a permissão previamente definida.
+
+    Informações detalhadas e exemplos podem ser obtidos em<citar>OPENLDAPaccess</citar>.
+Segue a seguir a sinópse da opção <i>access</i>:
+    
+<comandoNumerado>
+access to [ <DN match> ] [ <filter> ] [ <Attrs match> ]
+    by <Who match> <access> [ <control> ]
+    by <Who match> <access> [ <control> ]
+    ...
+    by * none stop
+
+# ...
+
+access to *
+    by * none
+</comandoNumerado>
+
+<subsubsecao>DN match</subsubsecao>
+
+<tabela>{|l|l|}
+    <lh><th>DN match</th>      <col/><th>Descrição [Permissões ao(s) registro(s)...]</th>          </lh>
+    <tr>dn="ou=CPD,o=University"           <col/> do DN especificado.</tr>
+    <tr>dn.exact="ou=CPD,o=University"     <col/> do DN especificado.</tr>
+    <tr>dn.one="ou=CPD,o=University"       <col/> filhos diretos (não recursivo).</tr>
+    <tr>dn.sub="ou=CPD,o=University"       <col/> filhos, inclusive o DN especificado (recursivamente).</tr>
+    <tr>dn.children="ou=CPD,o=University"  <col/> filhos, exceto o DN especificado (recursivamente).</tr>
+    <tr>filter=(objectClass=inetOrgPerson) <col/> identificados pelo filtro indicado.</tr>
+    <tr>filter=(uid=*)                     <col/> identificados pelo filtro indicado.</tr>
+    <tr>attrs=homePhone                    <col/> Permissões ao atributo listado.</tr>
+    <tr>attrs=userPassword,sambaLMPassword <col/> Permissões aos atributos listados.</tr>
+    <legenda>OpenLdap ACLs: DN match</legenda>
+    <nome>tab:ldap-acl-dnmatch</nome>
+</tabela>
+
+<subsubsecao>Who match</subsubsecao>
+
+<tabela>{|l|l|}
+    <lh><th>Who match</th>                     <col/><th>Descrição [Autenticação...]</th>          </lh>
+    <tr>*                                      <col/> realizada ou não.</tr>
+    <tr>anonymous                              <col/> não realizada.</tr>
+    <tr>users                                  <col/> realizada por qualquer DN</tr>
+    <tr>self                                   <col/> realizada pelo próprio registro.</tr>
+    <tr>dn='cn=admin,o=University'             <col/> realizada por 'cn=admin,o=University'</tr>
+    <tr>dn.exact='cn=admin,o=University'       <col/> realizada por 'cn=admin,o=University'</tr>
+    <tr>dn.sub='ou=CPD,o=University'           <col/> realizada por 'ou=CPD,o=University' ou filhos.</tr>
+    <tr>group.exact='cn=Admins,o=University'   <col/> realizada por um DN listado no grupo especificado.</tr>
+    <tr>peername.ip=192.168.0.3                <col/> realizada ou não a partir do IP especificado.</tr>
+    <tr>peername.ip=192.168.1.0%255.255.255.0  <col/> realizada ou não a partir da rede 192.168.1.0/24.</tr>
+    <legenda>OpenLdap ACLs: Who match</legenda>
+    <nome>tab:ldap-acl-whomatch</nome>
+</tabela>
+
+<subsubsecao>Access</subsubsecao>
+
+<tabela>{|l|l|l|}
+    <lh><th>Access name</th><col/> <th>Access code</th>   <col/>    <th>Descrição</th>          </lh>
+    <tr>none                <col/> =0        <col/> nenhum acesso. </tr>
+    <tr>disclose            <col/> =d        <col/> permite ao DSA retornar erros comentados ao DUA. </tr>
+    <tr>---                 <col/> =x        <col/> permite acesso a partir da operação <i>bind</i>. </tr>
+    <tr>---                 <col/> =c        <col/> permite o uso da operação <i>compare</i>. </tr>
+    <tr>---                 <col/> =s        <col/> permite o uso da operação <i>search</i>. </tr>
+    <tr>---                 <col/> =r        <col/> permite a leitura dos registros. </tr>
+    <tr>---                 <col/> =w        <col/> permite o uso da operação <i>mod (modify)</i>. </tr>
+    <tr>---                 <col/> =a        <col/> permite o uso da operação <i>add</i>. </tr>
+    <tr>---                 <col/> =z        <col/> permite o uso da operação <i>delete</i>. </tr>
+    <tr>auth                <col/> =dx       <col/> permite operação <i>bind</i> e erros comentados. </tr>
+    <tr>compare             <col/> =cdx      <col/> permite também operação <i>compare</i>. </tr>
+    <tr>search              <col/> =scdx     <col/> permite também operação <i>search</i>. </tr>
+    <tr>read                <col/> =rscdx    <col/> permite também a leitura de registros. </tr>
+    <tr>write               <col/> =wrscdx   <col/> permite também operação <i>mod (modify)</i>. </tr>
+    <legenda>OpenLdap ACLs: Access</legenda>
+    <nome>tab:ldap-acl-access</nome>
+</tabela>
+
+    A permissão <b>w</b> é equivalente a <b>az</b>. A permissão <b>s</b>
+retorna apenas o número de registros identificados pelo filtro utilizado,
+a pesquisa efetivamente depende da permissão <b>sc</b>.
+
+<tabela>{|l|l|l|}
+    <lh> <th>Access code</th>   <col/>    <th>Descrição</th>          </lh>
+    <tr>+d        <col/> adiciona permissão ao DSA retornar erros comentados ao DUA. </tr>
+    <tr>+x        <col/> adiciona permissão de acesso a partir da operação <i>bind</i>. </tr>
+    <tr>+c        <col/> adiciona permissão de uso da operação <i>compare</i>. </tr>
+    <tr>+s        <col/> adiciona permissão de uso da operação <i>search</i>. </tr>
+    <tr>+r        <col/> adiciona permissão de leitura dos registros. </tr>
+    <tr>+w        <col/> adiciona permissão de uso da operação <i>mod (modify)</i>. </tr>
+    <tr>+a        <col/> adiciona permissão de uso da operação <i>add</i>. </tr>
+    <tr>+z        <col/> adiciona permissão de uso da operação <i>delete</i>. </tr>
+    <tr>+rs       <col/> adiciona permissão de leitura de registros e uso da operação <i>search</i>. </tr>
+    <tr>+wrs      <col/> adiciona permissão de leitura de registros e uso da operação <i>mod</i>. </tr>
+    <tr>-d        <col/> remove permissão ao DSA retornar erros comentados ao DUA. </tr>
+    <tr>-x        <col/> remove permissão de acesso a partir da operação <i>bind</i>. </tr>
+    <tr>-c        <col/> remove permissão de uso da operação <i>compare</i>. </tr>
+    <tr>-s        <col/> remove permissão de uso da operação <i>search</i>. </tr>
+    <tr>-r        <col/> remove permissão de leitura dos registros. </tr>
+    <tr>-w        <col/> remove permissão de uso da operação <i>mod (modify)</i>. </tr>
+    <tr>-a        <col/> remove permissão de uso da operação <i>add</i>. </tr>
+    <tr>-z        <col/> remove permissão de uso da operação <i>delete</i>. </tr>
+    <tr>-rs       <col/> remove permissão de leitura de registros e uso da operação <i>search</i>. </tr>
+    <tr>-wrs      <col/> remove permissão de leitura de registros e uso da operação <i>mod</i>. </tr>
+    <tr>---       <col/> outras construções a partir das permissões acima são válidas. </tr>
+    <legenda>OpenLdap ACLs: Access após <b>control</b> <i>continue</i> ou <i>break</i></legenda>
+    <nome>tab:ldap-acl-access-continue</nome>
+</tabela>
+
+<subsubsecao>Control</subsubsecao>
+
+<tabela>{|l|l|}
+    <lh><th>Control</th>           <col/><th>Descrição</th>          </lh>
+    <tr>continue                        <col/> processar próxima cláusula <b>Who match</b>.</tr>
+    <tr>break                           <col/> processar próxima cláusula <b>access</b> para o mesmo <b>DN match</b>.</tr>
+    <tr>stop                            <col/> não processar próximas cláusulas para o mesmo <b>DN match</b> (padrão).</tr>
+    <legenda>OpenLdap ACLs: Control</legenda>
+    <nome>tab:ldap-acl-control</nome>
+</tabela>
+
+    Detalhes específicos da opção <i>access</i> que define as ACLs, podem ser
+obtidos através do comando:
+
+<comando>
+    $ man slapd.access
+</comando>
+
+<subsubsecao>ACLs padrão</subsubsecao>
+
+<comandoNumerado>
+access        to attrs=userPassword,shadowLastChange
+              by dn="cn=Ldap Admin,o=Empresa S/A" write
+              by anonymous auth
+              by self write
+              by * none
+
+access        to dn.base=""
+              by * read
+
+access        to *
+              by dn="cn=Ldap Admin,o=Empresa S/A" write
+              by * read
+</comandoNumerado>
+
+<tabela>{|c|l|l|l|}
+    <lh><th>Linha</th><col/>   <th>ACL item</th><col/> <th>Valor</th>   <col/>    <th>Access</th>          </lh>
+    <tr>1     <col/> DN match       <col/> attrs=userPassword,shadowLastChange        <col/> --- </tr>
+    <tr>2     <col/> Who match      <col/> dn="cn=Ldap Admin,o=Empresa S/A"           <col/> write </tr>
+    <tr>3     <col/> Who match      <col/> anonymous                                  <col/> auth </tr>
+    <tr>4     <col/> Who match      <col/> self                                       <col/> write </tr>
+    <tr>5     <col/> Who match      <col/> *                                          <col/> none </tr>
+    <tr>6     <col/> ---            <col/> ---                                        <col/> --- </tr>
+    <tr>7     <col/> DN match       <col/> dn.base=""                                 <col/> --- </tr>
+    <tr>8     <col/> Who match      <col/> *                                          <col/> read </tr>
+    <tr>9     <col/> ---            <col/> ---                                        <col/> --- </tr>
+    <tr>10    <col/> DN match       <col/> *                                          <col/> --- </tr>
+    <tr>11    <col/> Who match      <col/> dn="cn=Ldap Admin,o=Empresa S/A"           <col/> write </tr>
+    <tr>12    <col/> Who match      <col/> *                                          <col/> read </tr>
+    <legenda>OpenLdap ACLs padrão</legenda>
+    <nome>tab:ldap-acl-default</nome>
+</tabela>
+

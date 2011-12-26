@@ -1,0 +1,329 @@
+<capitulo>Integração: NSS e PAM</capitulo>
+
+    O <i>Name Service Switch</i> (NSS) e o <i>Pluggable Authentication
+Module</i> (PAM) são dois recursos fornecidos pelos sistemas operacionais
+Linux modernos. Estes recursos são independentes, mas relacionados entre si,
+na prática, pode-se utilizar isoladamente o <i>Name Service Switch</i> (NSS)
+configurado em uma base LDAP.
+
+    Já um sistema que utilize a <i>Pluggable Authentication Module</i> (PAM)
+autenticando em uma base LDAP, só funcionará adequadamente se o
+<i>Name Service Switch</i> (NSS) também estiver apropriadamente configurado,
+pois os arquivos criados pelo usuário autenticado utilizarão um <i>uid
+number</i> que deve ser conversível pelo NSS.
+
+    O NSS e a PAM atuam como <i>Directory User Agents (DUA)</i> realizando
+consultas a base LDAP. A PAM requer que os registros utilizados para
+autenticação de usuários possuam o <i>objectClass posixAccount</i>, e os
+registros de grupo de usuários possuam o <i>objectClass posixGroup</i>.
+Segue exemplos dos respectivos registros:
+
+<comandoNumerado>
+dn: cn=Reinaldo Carvalho,o=University
+objectClass: inetOrgPerson
+objectClass: posixAccount
+cn: Reinaldo Carvalho
+sn: Carvalho
+givenName: Reinaldo
+uid: rei
+uidNumber: 2000
+gidNumber: 2000
+homeDirectory: /home/rei
+loginShell: /bin/bash
+userPassword: {SSHA}TqUUQybe/Yco1nUREX0AYjqiya1wmo6T
+</comandoNumerado>
+
+<comandoNumerado>
+dn: cn=Admins,ou=Groups,o=University
+objectClass: posixGroup
+gidNumber: 2000
+cn: Admins
+description: Super users
+</comandoNumerado>
+
+    Opcionalmente os registros de usuários capazes de realizar login através
+da PAM podem conter o <i>objectClass shadowAccount</i>. Este
+<i>objectClass</i> prover informações referentes ao atributo
+<i>userPassword</i> que são controladas pela PAM. O <i>OpenLdap</i> não
+interfere nestes valores, sendo estes utilizados exclusivamente pela PAM.
+
+<lista>
+
+<item/> <b>shadowLastChange</b>: contém informação que permite calcular a data
+que ocorreu a última troca de senha. Na prática, contém o número de dias entre
+01/01/1970 e o dia que a senha atual foi definida. Pode-se calcular através da
+expressão: <b>expr $(date +%s) / 60 / 60 / 24 - $shadowLastChange</b> o número
+de dias desde que a senha atual foi definida.
+
+<item/> <b>shadowMin</b>: número de dias que devem ser aguardados para uma
+nova troca de senha.
+
+<item/> <b>shadowMax</b>: número de dias que uma senha pode ser utilizada
+até a PAM solicitar a troca da senha. Caso o usuário não troque a senha,
+o login será possível pelo número de dias configurado em
+<i>shadowInactive</i>.
+
+<item/> <b>shadowInactive</b>: número de dias após o <i>shadowMax</i> ser
+atingido, para que a conta não consiga mais fazer login. A senha deve ser trocada
+antes deste período terminar.
+
+<item/> <b>shadowWarning</b>: número de dias antes do dia que a troca de
+senha será solicitada (<i>shadowMax</i>). Neste período, o usuário passará
+a ser avisado que deve trocar a senha.
+
+<item/> <b>shadowExpire</b>: permite informar a data ao qual a conta não mais
+conseguirá fazer login. Na prática, contém o número de dias entre 01/01/1970 e
+o dia que a conta não mais conseguirá realizar login. Pode-se calcular através
+da expressão: <b>expr $(date +%s) / 60 / 60 / 24 + 17</b>, neste caso, a conta
+poderá realizar login pelo período de 17 dias a partir da execução do cálculo.
+
+</lista>
+
+    O quadro abaixo possui exemplo dos atributos a serem adicionados aos
+registros de usuários que fazem login via PAM. Neste exemplo, a senha atual
+foi definida em 03/11/2009 (<i>shadowLastChange</i>), e só poderá ser trocada
+novamente (via PAM) após 06/11/2009 (<i>shadowMin</i>). A partir de
+26/12/2009 o usuário será avisado que deve realizar a troca da senha
+(<i>shadowWarning</i>).
+
+    Entre 02/01/2010 (<i>shadowMax</i>) e 07/01/2010 (<i>shadowInactive</i>)
+o comando de troca de senha será executado automaticamente ao realizar login,
+caso a senha não seja trocada até 07/01/2010, não será mais possível fazer
+login. Independemente da senha, o conta não conseguirá fazer login após
+01/02/2009 (<i>shadowExpire</i>). O valor '-1' ou a remoção do atributo
+desabilitará a funcionalidade do mesmo.
+
+<comandoNumerado>
+objectClass: shadowAccount
+shadowLastChange: 14552
+shadowMin: 3
+shadowWarning: 7
+shadowMax: 60
+shadowInactive: 5
+shadowExpire: 14642
+</comandoNumerado>
+
+<subsecao>Name Service Switch (NSS)</subsecao>
+
+    A biblioteca <i>Name Service Switch</i> (NSS) é utilizada para a conversão
+de identificadores (<i>uid number</i>, <i>gid number</i>, <i>protocol number</i>,
+<i>port number</i>) em nomes (<i>nome do usuário</i>, <i>nome do grupo</i>,
+<i>nome do protocolo</i>, <i>nome da porta</i>), e vice-versa. Por padrão esta
+conversão é baseada nos arquivos <i>/etc/passwd</i>, <i>/etc/group</i>,
+<i>/etc/protocols</i> e <i>/etc/services</i> respectivamente.
+
+    Um exemplo da necessidade desta conversão ocorre quando listamos os
+arquivos de um diretório do sistema de arquivos. O sistema de arquivos
+armazena apenas o <i>uid number</i> e <i>gid number</i> do proprietário dos
+arquivos, sendo necessário a conversão destes dados para a exibição adequada
+do <i>nome do usuário</i> (uid) e <i>nome do grupo</i> (gid).
+
+    O mesmo também ocorre quando utilizamos nomes para portas de rede, quando
+informamos que desejamos realizar uma conexão a porta 'www' ou 'smtp', estes
+nomes precisam ser convertidos para as portas 80 e 25 respectivamente, esta
+conversão é realizada automaticamente pelo <i>Name Service Switch</i> (NSS).
+Todavia, na maioria dos casos a conversão dos identificadores de protocolo e
+portas permacene baseada nos arquivos <i>/etc/protocols</i> e
+<i>/etc/services</i>.
+
+<subsubsecao>NSS: instalação do suporte a LDAP</subsubsecao>
+
+    A biblioteca <i>Name Service Switch</i> (NSS) está disponível nas atuais
+distribuições do sistema Linux, entretanto seu comportamento padrão utiliza os
+arquivos <i>/etc/passwd</i>, <i>/etc/group</i>, <i>/etc/protocols</i> e
+<i>/etc/services</i> para a conversão dos identicadores em nomes. O suporte a
+base ldap deve ser instalado conforme indicado:
+
+<comando>
+    # aptitude install libnss-ldap
+</comando>
+
+    Várias configurações serão solicitadas, como <i>host</i> do serviço ldap,
+<i>DN</i> do usuário para conexão ao ldap, senha, entre outras, neste momento
+basta aceitar (através da tecla ENTER) todas as perguntas, pois os arquivos de
+configuração serão verificados a seguir.
+
+    Opcionalmente, pode-se instalar o módulo de cache de consultas:
+
+<comando>
+    # aptitude install nscd
+</comando>
+
+<subsubsecao>NSS: configuração do módulo libnss_ldap.so</subsubsecao>
+
+    O arquivo de configuração <b>/etc/libnss-ldap.conf</b>:
+
+<comandoNumerado>
+base o=Universidade Federal
+uri ldap://ldap.example.com:389/
+ldap_version 3
+
+binddn uid=nss,ou=SystemAccounts,o=Universidade Federal
+bindpw secret
+
+# rootbinddn uid=nss-root,ou=SystemAccounts,o=Universidade Federal
+# echo -n 'secret' > /etc/libnss-ldap.secret
+# chmod 600 /etc/libnss-ldap.secret
+
+# nss_base_passwd        o=Universidade Federal?sub
+# nss_base_group         o=Universidade Federal?sub
+</comandoNumerado>
+
+    As opções <i>binddn</i> e <i>bindpw</i> são necessárias caso o DSA não
+permita consultas anônimas.
+
+    Para verificar se as configurações estão de acordo com as indicadas,
+utilize o comando abaixo:
+
+<comando>
+    # grep -Ev '^#|^$' /etc/libnss-ldap.conf
+</comando>
+
+    Os parâmetros de configuração disponíveis podem ser listados no manual:
+
+<comando>
+    # man libnss-ldap.conf
+</comando>
+
+
+<subsubsecao>NSS: ativação do módulo libnss_ldap.so</subsubsecao>
+
+    O módulo <i>libnss_ldap.so</i> foi configurado e está disponível para uso,
+entretanto é necessário indicar que as pesquisas devem ser realizadas
+primeiramente no /etc/passwd, e posteriormente no ldap.
+
+    <b>/etc/nsswitch.conf</b>
+<comando>
+passwd:         files ldap
+group:          files ldap
+shadow:         files ldap
+</comando>
+
+    Pode-se testar o funcionamento adequado do NSS com os comandos abaixo, em
+que todos os usuários e grupos devem ser listados, seja do /etc/passwd ou do
+LDAP:
+
+<comando>
+    $ getent passwd
+    $ getent group
+    # getent shadow
+</comando>
+
+<subsecao>Pluggable Authentication Module (PAM)</subsecao>
+
+    A biblioteca <i>Pluggable Authentication Module</i> (PAM) é utilizada
+como subsistema de autenticação dos <i>SOs</i> POSIX modernos. Assim,
+aplicativos que necessitam validar usuários e senhas não precisam implementar
+o acesso a inúmeros formatos de base de dados, mas devem utilizar a PAM para
+esta finalidade.
+
+    A funcionalidade básica da biblioteca <b>PAM</b> é prover o suporte a
+autenticação em diversas bases de dados (LDAP, MySQL, PostgreSQL, entre
+outras) e realizar a validação do usuário. A PAM também permite a inclusão de
+validações adicionais como a restrição de horário de <i>logon</i> ou de grupo.
+Também é possível a execução de ações no momento da autenticação, como a
+criação do <i>home</i> do usuário.
+
+<subsubsecao>PAM: instalação do suporte a LDAP</subsubsecao>
+
+    A biblioteca PAM esta disponível nas atuais distribuições do sistema Linux,
+entretanto seu comportamento padrão é validar usuários no sistema (/etc/passwd
+e /etc/shadow). O suporte a base ldap deve ser instalado conforme indicado:
+
+<comando>
+    # aptitude install libpam-ldap
+</comando>
+
+    Várias configurações serão solicitadas, como <i>host</i> do serviço ldap,
+<i>DN</i> do usuário para conexão ao ldap, senha, entre outras, neste momento basta aceitar
+(através da tecla ENTER) todas as perguntas, pois os arquivos de configuração
+serão verificados a seguir.
+
+<subsubsecao>PAM: configuração do módulo pam_ldap.so</subsubsecao>
+
+    A configuração da biblioteca PAM deve ser realizada para que a autentição
+seja associada a uma base LDAP, e deve ser realizada como indicado:
+
+    O arquivo de configuração <b>/etc/pam_ldap.conf</b>:
+
+<comandoNumerado>
+base o=Universidade Federal
+uri ldap://ldap.example.com:389/
+ldap_version 3
+
+binddn uid=pam,ou=SystemAccounts,o=Universidade Federal
+bindpw secret
+
+rootbinddn uid=pam-root,ou=SystemAccounts,o=Universidade Federal
+# echo -n 'supersecret' > /etc/pam_ldap.secret
+# chmod 600 /etc/pam_ldap.secret
+
+pam_password md5
+# pam_password exop
+# pam_password exop_send_old
+
+# pam_min_uid 2000
+# pam_filter (description=PAM)
+# pam_groupdn "<posixGroup DN>"
+
+</comandoNumerado>
+
+    As opções <i>binddn</i> e <i>bindpw</i> são necessárias caso o DSA não
+permita consultas anônimas. A opção <i>rootbinddn</i> é requerida para que o
+<i>root</i> possa trocar a senha dos usuários, e requer ACL no DSA para que
+o usuário em questão 'uid=pam-root,ou=SystemAccounts,o=Universidade Federal'
+tenha permissão de escrita no atributo <i>userPassword</i> e
+<i>shadowLastChange</i>.
+
+    Normalmente esta opção não é configurada, e a troca de senha é realizada
+pelo usuário diremente no LDAP, por exemplo através de uma interface WEB, e
+não através da PAM.
+
+    Para verificar se as configurações estão de acordo com as indicadas,
+utilize o comando abaixo:
+
+<comando>
+    # grep -Ev '^#|^$' /etc/pam_ldap.conf
+</comando>
+
+    Os parâmetros de configuração disponíveis podem ser listados no manual:
+
+<comando>
+    # man pam_ldap.conf
+</comando>
+
+<subsubsecao>PAM: ativação do módulo pam_ldap.so</subsubsecao>
+
+    O módulo <i>pam_ldap.so</i> está configurado e disponível para uso,
+sendo que cada aplicativo tem a possibilidade de utilizá-lo. A PAM possui
+um arquivo de configuração no diretório /etc/pam.d/ para cada aplicativo
+(ex: /etc/pam.d/login, /etc/pam.d/kdm). As configurações globais, para
+todos os aplicativos, são realizadas no arquivos /etc/pam.d/common-* como
+indicado a seguir:
+
+    <b>/etc/pam.d/common-account</b>
+<comando>
+account sufficient pam_unix.so
+account required pam_ldap.so use_first_pass
+</comando>
+
+    <b>/etc/pam.d/common-auth</b>
+<comando>
+auth sufficient pam_unix.so nullok_secure
+auth required pam_ldap.so use_first_pass
+</comando>
+
+    <b>/etc/pam.d/common-password</b>
+<comando>
+password sufficient pam_unix.so nullok obscure min=4 max=8 md5
+password required pam_ldap.so try_first_pass
+</comando>
+
+    <b>/etc/pam.d/common-session</b>
+<comando>
+session required pam_mkhomedir.so skel=/etc/skel umask=0022
+session sufficient pam_unix.so
+session required pam_ldap.so
+</comando>
+
+    Os arquivos acima devem conter somente a configuração indicada.

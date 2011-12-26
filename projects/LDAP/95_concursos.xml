@@ -1,0 +1,50 @@
+<capitulo>Questões de Concurso</capitulo>
+
+<subsecao>MPU 2010 (CESPE) - ANALISTA DE INFORMÁTICA / SUPORTE TÉCNICO -
+Cargo 27</subsecao>
+
+    Julgue os itens subsequentes a respeito dos padrões X.500 e LDAP
+(lightweight directory access protocol), usados em serviços de
+diretório.
+
+<lista>
+<item/><b>109</b>: o LDAP não define o serviço de diretório em si, por isso,
+no contexto da arquitetura cliente/servidor, o cliente, nesse padrão, é
+dependente da implementação do serviço de diretório que está no servidor.
+
+<item/><b>110</b>: o padrão X.500 especifica um sistema de diretório
+distribuído que atende a consultas quanto a objetos da rede. Esse padrão
+pode ser utilizado para acessar informações acerca de serviços de hardware,
+mas não de software.
+
+<item/><b>111</b>: no modelo funcional do padrão X.500, o agente do usuário
+de diretórios é um processo de aplicação OSI (open system interconnection)
+que faz parte do diretório e cuja função é fornecer aos agentes do sistema
+de diretório acesso à base de informações.
+
+<item/><b>112</b>: uma das características do LDAP é que as mensagens do
+protocolo de aplicação são transportadas diretamente pela camada TCP
+(transport control protocol) da arquitetura da Internet.
+</lista>
+
+    Comentários:
+
+<lista>
+<item/><b>109</b>: o LDAP define o protocolo de acesso as informações do
+serviço de diretório (RFC-4511), a base de dados LDAP (RFC-4512) que formam o
+serviço de diretório em si. O software cliente é independente da implementação
+LDAP do serviço de diretório do servidor.
+
+<item/><b>110</b>: as informações tipicamente armazenadas em um serviço LDAP
+são sobre software e hardware.
+
+<item/><b>111</b>: o agente do usuário de diretórios (Directory User Agent)
+é um software utilizado para acessar as informações armazenadas no agentes
+do sistema de diretório (Directory System Agent). O Directory User Agent não
+faz parte de Directory System Agent, e fornece ao administrador da rede
+acesso à base de informações.
+
+<item/><b>112</b>: uma das características do LDAP é que as mensagens do
+protocolo de aplicação são transportadas pela camada de transporte. Não
+existe o conceito de 'camada TCP'.
+</lista>

@@ -1,0 +1,867 @@
+<capitulo>LDAP - Lightweight Directory Access Protocol</capitulo>
+
+    A centralização da autenticação e autorização de usuários, assim como,
+de informações relacionadas a serviços de rede tem facilitado a
+administração e o controle de acesso a recursos, e possibilitado uma forma
+organizada do armazenamento deste tipo informações.
+
+    Da mesma forma, a padronização do protocolo para acesso a estas
+informações permite o desenvolvimento de aplicações intereoperáveis, não
+requerendo o uso de bibliotecas proprietárias de um determinado fornecedor.
+
+    Este capítulo abordará o protocolo LDAP, que permite a comunicação
+entre o cliente (<i>Directory User Agent - DUA</i>) e o servidor
+(<i>Directory System Agent - DSA</i>) LDAP, e as características da base de
+dados LDAP.
+
+    As informações a seguir são procedimentos padronizados pelo IETF em RFCs
+e são úteis para diversos servidores LDAP, como o <i>OpenLdap®</i>, <i>Apache
+Directory Server® (ApacheDS)</i>, <i>Oracle Internet Directory® (OID)</i>,
+<i>Novell eDirectory®</i>, <i>Microsoft Active Directory® (AD)</i> e <i>IBM
+Directory Server®</i>.
+
+<subsecao>Base de dados LDAP - Directory Information Base (DIB) (RFC-4512)</subsecao>
+
+    A base LDAP possui registros (<i>entries</i>) que são ligados em formato
+de árvore, este comportamento é chamado de <i>Directory Information Tree</i>.
+Um registro imediatamente superior é chamado de 'pai' (<i>parent</i>) e um
+registro imediatamente inferior é chamado de 'filho' (<i>child</i>).
+
+    O caminho completo de um registro na árvore é chamado de <i>Distinguished
+Name - DN</i>. Um registro possui um identificador único entre os registros
+filhos do mesmo pai, esse identificador é chamado de <i>Relative Distinguished
+Name - RDN</i>.
+
+    Um registro é formado por um conjunto de atributos que são classificados
+em três grupos: os atributos <i>objectClass</i>, os atributos de informação
+(<i>user attributes</i>), e os atributos operacionais (<i>operational
+attributes</i>).
+
+    Os <b>atributos de objectClass</b> determinam quais atributos de
+informação podem ser utilizados no registro. Os <i>objectClass</i>
+fornecem <b>atributos obrigatórios</b> e <b>atributos opcionais</b>. Como
+exemplo, o <i>objectClass inetOrgPerson</i>, possui dois atributos
+obrigatórios: <i>cn</i>, e <i>sn</i>, e vários opcionais, dentre eles estão:
+<i>mail</i>, <i>telephoneNumber</i>, <i>street</i>, <i>l</i>, <i>postalCode</i>.
+O quadro abaixo possui exemplos de atributos do tipo <i>objectClass</i>:
+
+<comandoNumerado>
+objectClass: inetOrgPerson
+objectClass: posixAccount
+objectClass: sambaSamAccount
+</comandoNumerado>
+
+    Os <b>atributos de informação</b> armazenam dados como <i>nome</i>,
+<i>e-mail</i>, <i>telefone</i>, assim como, <i>endereço IP</i>, <i>tipo de
+hardware</i>, <i>endereço MAC</i>, <i>nome do host</i>, dentre outros.
+O quadro abaixo possui exemplos de atributos <i>de informação</i>:
+
+<comandoNumerado>
+cn: Reinaldo de Carvalho
+sn: Carvalho
+mail: reinaldoc@example.com
+telephoneNumber: 91 5555-1111
+userPassword: {SSHA}KchBFzrN7g3QpF391HUnqJzDR0s3aXj4
+</comandoNumerado>
+
+    O diagrama abaixo mostra a relação entre os registros em uma base LDAP,
+assim como, a sintáxe do caminho completo do registro, o <i>Distinguished
+Name - DN</i>. O <i>DN</i> é caracterizado pela notação inversa dos elementos
+que fazem parte do ramo da árvore. Note também a presença do atributo
+<i>objectClass</i> que determina quais atributos de informação podem estar
+presentes no registro.
+
+<figura>
+    <tamanho>0.9</tamanho>
+    <arquivo>imgs/ldap-entry</arquivo>
+    <legenda>Registros LDAP.</legenda>
+    <nome>fig:ldap-entry</nome>
+</figura>
+
+    Os <b>atributos operacionais</b> armazenam dados controlados pelo servidor
+LDAP (Directory System Agent - DSA), como o identificador único de registro
+(<i>entryUUID</i>), o identificador do criador do registro
+(<i>creatorsName</i>), a data de criação do registro (<i>createTimestamp</i>),
+o identificador do último modificador do registro (<i>modifiersName</i>), a
+data da última modificação (<i>modifyTimestamp</i>), o <i>DN</i> do registro
+(<i>entryDN</i>) e se possui registros filhos (<i>hasSubordinates</i>); estes
+registros são atualizados pelo DSA. O quadro abaixo possui exemplos de
+atributos <i>operacionais</i>:
+
+<comandoNumerado>
+entryUUID: 7852c038-5504-102e-8d48-bd91f7471622
+creatorsName: cn=admin,o=Universidade Federal
+createTimestamp: 20091024161729Z
+modifiersName: cn=admin,o=Universidade Federal
+modifyTimestamp: 20091024172150Z
+entryDN: cn=Reinaldo de Carvalho,o=Universidade Federal
+hasSubordinates: FALSE
+</comandoNumerado>
+
+<subsecao>LDIF - LDAP Data Interchange Format (RFC-2849)</subsecao>
+
+    O<i>LDAP Data Interchange Format</i> (<i>LDIF</i>) é um formato de dados
+que descreve os registros da base LDAP. O LDIF pode ser utilizado para o
+<i>dump</i> e <i>restore</i> de registros entre <i>Directory System Agents</i>
+(<i>DSA</i>). Um arquivo LDIF pode conter um ou mais registros separados por
+linha em branco, e seu formato é mostrado a seguir:
+
+<comandoNumerado>
+dn: cn=Reinaldo de Carvalho,o=Universidade Federal
+objectClass: inetOrgPerson
+cn: Reinaldo de Carvalho
+sn: Carvalho
+uid: rei
+mail: reinaldoc@example.com
+telephoneNumber: 91 5555-1111
+userPassword: {SSHA}KchBFzrN7g3QpF391HUnqJzDR0s3aXj4
+</comandoNumerado>
+
+    <b>Tarefa</b>: Propor a alteração do <i>Relative Distinguished Name -
+RDN</i> do registro descrito no quadro acima, e comentar quais são os
+atributos recomendados para serem utilizados como RDN e quais não são.
+
+\vskip 0.3cm
+
+    <b>Tarefa</b>: Pesquisar na RFC-2849 como textos acentuados devem ser
+armazenados no LDIF. Propor como o valor "Belém - Pará", sem as aspas, deve
+ser declarado no atributo 'l' e inserido no LDIF do quadro acima.
+
+\vskip 0.3cm
+
+    <b>Tarefa</b>: Pesquisar na RFC-2849 qual outro fator, além da presença de
+caracteres acentuados, torna obrigatório o uso de codificação base-64 nos
+valores dos atributos.
+
+<subsecao>Schema (RFC-4512)</subsecao>
+
+    A definição dos atributos disponíveis para utilização em um <i>Directory
+System Agent - DSA</i> são armazenadas nos schemas e o padrão para definição
+destes é especificado no capítulo 4 da RFC-4512. O quadro a seguir contém
+exemplos da definição de atributos de <i>objectClass</i>.
+
+    As RFCs RFC-2256, RFC-2798, RFC-4519, RFC-4524 definem alguns dos principais
+objectclass/atributos padrões dos DSA.
+
+<comandoNumerado>
+# /etc/ldap/schema/core.schema
+objectclass ( 2.5.6.0 NAME 'top'
+    DESC 'RFC2256: top of the superclass chain'
+    ABSTRACT
+    MUST objectClass )
+
+# /etc/ldap/schema/core.schema
+objectclass ( 2.5.6.6 NAME 'person'
+    DESC 'RFC2256: a person'
+    SUP top STRUCTURAL
+    MUST ( sn $ cn )
+    MAY ( userPassword $ telephoneNumber $ seeAlso $ description ) )
+
+objectclass ( 2.5.6.7
+    NAME 'organizationalPerson'
+    DESC 'RFC2256: an organizational person'
+    SUP person STRUCTURAL
+    MAY ( title $ x121Address $ registeredAddress $ destinationIndicator $
+          preferredDeliveryMethod $ telexNumber $ teletexTerminalIdentifier $
+          telephoneNumber $ internationaliSDNNumber $
+          facsimileTelephoneNumber $ street $ postOfficeBox $ postalCode $
+          postalAddress $ physicalDeliveryOfficeName $ ou $ st $ l ) )
+
+# /etc/ldap/schema/inetorgperson.schema
+objectclass     ( 2.16.840.1.113730.3.2.2
+    NAME 'inetOrgPerson'
+    DESC 'RFC2798: Internet Organizational Person'
+    SUP organizationalPerson
+    STRUCTURAL
+    MAY (
+          audio $ businessCategory $ carLicense $ departmentNumber $
+          displayName $ employeeNumber $ employeeType $ givenName $
+          homePhone $ homePostalAddress $ initials $ jpegPhoto $
+          labeledURI $ mail $ manager $ mobile $ o $ pager $
+          photo $ roomNumber $ secretary $ uid $ userCertificate $
+          x500uniqueIdentifier $ preferredLanguage $
+          userSMIMECertificate $ userPKCS12 ) )
+
+</comandoNumerado>
+
+    O diagrama abaixo demonstra a relação existente entre os
+<i>objectClass</i> listados no quadro acima, em que o <i>objectClass person</i>
+é extendido pelo <i>objectClass organizationlPerson</i>, assim como, este é
+extendido pelo <i>objectClass inetOrgPerson</i>, fazendo com que novos
+atributos estejam disponíveis.
+
+<figura>
+    <tamanho>0.9</tamanho>
+    <arquivo>imgs/ldap-objectclass</arquivo>
+    <legenda>LDAP Schema.</legenda>
+    <nome>fig:ldap-objectclass</nome>
+</figura>
+
+<lista>
+<item/> <b>NAME</b>: nome do objectClass.
+
+<item/> <b>DESC</b>: descrição do objectClass.
+
+<item/> <b>SUP</b>: inclui a definição de outro <i>objectClass</i>
+(semelhante a herança). No exemplo acima, o <i>objectClass
+organizationalPerson</i> e o <i>inetOrgPerson</i> possuem todos os
+atributos do <i>objectClass person</i>.
+
+<item/> <b>STRUCTURAL</b>: define o tipo do <i>objectClass</i>. Indica o
+principal <i>objectClass</i> de um registro. Todo registro necessita de um
+<i>objectClass</i> deste tipo.
+
+<item/> <b>ABSTRACT</b>: define o tipo do <i>objectClass</i>. Indica que o
+<i>objectClass</i> tem por finalidade ser utilizado como modelo
+(<i>template</i>), sendo incluído (herdado) por outro. Não pode-se criar
+registros somente com <i>objectClass</i> do tipo ABSTRACT.
+
+<item/> <b>AUXILIARY</b>: define o tipo do <i>objectClass</i>. Indica que o
+<i>objectClass</i> tem por finalidade fornecer atributos adicionais, mas não
+de formar o registro individualmente, é utilizado em conjunto com um
+<i>objectClass</i> do tipo STRUCTURAL. Não pode-se criar registros somente
+com <i>objectClass</i> do tipo AUXILIARY.
+
+<item/> <b>MUST</b>: indica os atributos que devem obrigatoriamente estar
+presentes nos registros formados por este <i>objectClass</i>.
+
+<item/> <b>MAY</b>: indica os atributos que podem ser utilizados nos
+registros formados por este <i>objectClass</i>.
+</lista>
+
+    <b>Tarefa</b>: consultar o schema nis.schema do OpenLdap e identificar
+quais os atributos obrigatórios e opcionais do <i>objectClass posixAccount</i>.
+
+<br/>0.3cm
+
+    Deve-se primordialmente utilizar <i>objectClass</i> que estejam definidos
+em RFCs como os supra-citados, e <b>excepcionalmente</b> criá-los. O prefixo
+<i>1.3.6.1.3</i> pode ser utilizado para OIDs restritos e experimentais como
+indicado abaixo:
+
+<comandoNumerado>
+# /etc/ldap/schema/local.schema
+objectclass     ( 1.3.6.1.3.100
+        NAME 'container'
+        DESC 'Simple Container'
+        SUP top STRUCTURAL
+        MUST ( cn )
+        )
+</comandoNumerado>
+
+    O quadro a seguir contém exemplos da definição de atributos de
+informacionais (<i>user attributes</i>):
+
+<comandoNumerado>
+# /etc/ldap/schema/core.schema
+attributetype ( 2.5.4.41
+    NAME 'name'
+    EQUALITY caseIgnoreMatch
+    SUBSTR caseIgnoreSubstringsMatch
+    SYNTAX 1.3.6.1.4.1.1466.115.121.1.15{32768} )
+
+attributetype ( 2.5.4.3
+    NAME ( 'cn' 'commonName' )
+    DESC 'RFC2256: common name(s) for which the entity is known by'
+    SUP name )
+
+attributetype ( 2.5.4.4
+    NAME ( 'sn' 'surname' )
+    DESC 'RFC2256: last (family) name(s) for which the entity is known by'
+    SUP name )
+
+attributetype ( 2.5.4.20
+    NAME 'telephoneNumber'
+    DESC 'RFC2256: Telephone Number'
+    EQUALITY telephoneNumberMatch
+    SUBSTR telephoneNumberSubstringsMatch
+    SYNTAX 1.3.6.1.4.1.1466.115.121.1.50{32} )
+
+# /etc/ldap/schema/inetorgperson.schema
+attributetype ( 0.9.2342.19200300.100.1.3
+    NAME ( 'mail' 'rfc822Mailbox' )
+    DESC 'RFC1274: RFC822 Mailbox'
+    EQUALITY caseIgnoreIA5Match
+    SUBSTR caseIgnoreIA5SubstringsMatch
+    SYNTAX 1.3.6.1.4.1.1466.115.121.1.26{256} )
+
+</comandoNumerado>
+
+<lista>
+<item/> <b>NAME</b>: nome do atributo.
+
+<item/> <b>DESC</b>: descrição do atributo.
+
+<item/> <b>SUP</b>: inclui a definição de outro atributo (semelhante a
+herança).
+
+<item/> <b>EQUALITY</b>: indica a característica de comparação de
+equivalência EQ atributo=valor (RFC4517). Isto é, define o comportamento do
+valor do atributo na operação de pesquisa EQ e operação de comparação. Através
+desta opção pode-se especificar que valores distintos devem ser considerados
+equivalentes (ex: 91-5555-1111 e 9155551111).
+
+<item/> <b>SUBSTR</b>: indica a característica de comparação substring SUB
+atributo=val* (RFC4517). Isto é, define o comportamento do valor do atributo
+na operação de pesquisa SUB.
+
+<item/> <b>SYNTAX</b>: indica a sintáxe aceita para o valor do atributo:
+string, string numérica, data, etc (RFC4517). Isto é, define quais tipos de
+dados podem ser armazenados por um atributo. A sintáxe <i>Boolean</i> aceita
+apenas os valores <i>TRUE</i> e <i>FALSE</i>, por exemplo.
+
+<item/> <b>SINGLE-VALUE</b>: indica que este atributo é único por registro.
+</lista>
+
+    A RFC-4517 descreve as características de comparações - <i>matching rules</i>
+(ex: <i>telephoneNumberMatch</i>, <i>caseExactMatch</i>,
+<i>generalizedTimeMatch</i>, <i>numericStringMatch</i>, ...) disponíveis para
+uso na opção <i>EQUALITY</i> e <i>SUBSTR</i>.
+
+    Descrevendo também as sintáxes (ex: <i>Telephone Number</i>,
+<i>Boolean</i>, <i>Generalized Time</i>, <i>Numeric String</i>, ...) que estão
+disponíveis para uso na opção <i>SYNTAX</i>.
+
+\vskip 0.3cm
+
+    <b>Tarefa</b>: pesquisar na RFC-4517 e RFC-4518 o comportamento da
+característica de pesquisa <i>telephoneNumberMatch</i> e propor duas possíveis
+pesquisas que casem com um registro que possua o seguinte atributo-valor:
+<i>telephoneNumber: 91 5555-1111</i>.
+
+\vskip 0.2cm
+
+    Este comportamento influencia tanto as pesquisas realizadas a base, quanto
+a inserção de atributos nos registros. Um registro não pode possuir atributos
+iguais com valores iguais. A característica de comparação
+<i>telephoneNumberMatch</i> faz com que diferentes <i>strings</i> que
+representam números telefônicos sejam consideradas iguais.
+
+\vskip 0.2cm
+
+    <b>Tarefa</b>: pesquisar na RFC-4517 a sintaxe chamada <i>Telephone
+Number</i> e <i>Generalized time</i> e propor um exemplo de valor aceito por
+um atributo que exija uma destas sintaxes.
+
+
+
+<subsecao>Protocolo LDAP - Lightweight Directory Access Protocol (RFC-4511)</subsecao>
+<nome>LDAPprotocol</nome>
+
+    O protocolo LDAP define o formato das operações realizadas entre o cliente
+LDAP (<i>Directory User Agent - DUA</i>) e o servidor LDAP (<i>Directory System
+Agent - DSA</i>). As principais operações são descritas a seguir:
+
+<lista>
+<item/> <b>bind</b>: a operação de <i>bind</i> permite o envio de dados de
+autenticação ao servidor, normalmente um <i>Distinguished Name</i> e senha, em
+que são determinados através de <i>ACLs</i> os registros acessíveis a partir
+desta autenticação.
+
+<item/> <b>search</b>: a operação de pesquisa retorna registros ao
+<i>Directory User Agent - DUA</i> e depende de um nó de busca (<i>base
+DN</i>), do tipo de pesquia (<i>scope</i>) e de um filtro de pesquisa
+(<i>LDAP filter</i>).
+
+<item/> <b>add</b>: a operação de criação de registros que requer dados sobre
+o novo registro, e o <i>Distinguished Name</i> que indica o registro pai e o
+<i>RDN</i> do registro.
+
+<item/> <b>mod</b> (modify): a operação de modificação de registro permite a
+adição, remoção e alteração de atributos.
+
+<item/> <b>modrdn</b>: a operação de modificação de <i>Distinguished Name</i>,
+permite também a alteração do <i>Relative Distinguished Name</i> do registro.
+
+<item/> <b>del</b>: a operação de remoção de registro requer apenas o
+<i>Distinguished Name</i> do registro a ser removido.
+
+<item/> <b>compare</b>: a operação de comparação requer a indicação do
+<i>Distinguished Name</i> do registro e os valores e atributos a serem
+comparados. Caso os atributos armazenados no registro possuam valores iguais
+aos utilizados nesta operação, o resultado é <i>verdadeiro</i>, caso
+contrário, é <i>falso</i>.
+
+Esta operação tende a ser mais eficaz, ao ponto
+que a comparação é realizada pelo DSA, utilizando-se do recurso de equivalência
+de valores (EQUALITY) dos atributos. Assim, evita-se a utilização da
+operação de pesquisa (<i>search</i>) e posterior comparação pela aplicação.
+
+<item/> <b>unbind</b>: a opção de <i>unbind</i> realiza a de-autenticação
+(logoff) e finaliza a conexão.
+</lista>
+
+    A operação de pesquisa (<i>search</i>) possui os parâmetros: <b>base DN</b>
+(<i>nó de busca</i>), <b>scope</b> (<i>tipo de pesquisa</i>), <b>filter</b>
+(<i>filtro de pesquisa</i>), <b>sizelimit</b> (<i>quantidade de
+registros</i>), <b>timelimit</b> (<i>tempo de pesquisa</i>) e <b>result
+attribute</b> (atributos retornados).
+
+<lista>
+<item/> <b>base DN</b> (<i>nó de busca</i>): qualquer <i>Distinguished Name</i> pode
+ser utilizado como ponto de pesquisa. A pesquisa ocorrerá a partir do <i>DN</i>
+indicado de acordo com tipo de pesquisa (<i>scope</i>). Este parâmetro é
+obrigatório.
+
+<item/> <b>scope</b> (<i>tipo de pesquisa</i>): determina quais registros devem
+ser comparados com o filtro de pesquisa; relativo a <i>base DN</i> indicada.
+<b>base</b>: somente a <i>base DN</i> indicada, <b>sub</b>: todos os filhos
+recursivamente, inclusive a <i>base DN</i>, <b>children</b>: todos os filhos
+recursivamente, exceto a <i>base DN</i>, <b>one</b>: somente os filhos ligados
+diretamente a <i>base DN</i> (ou seja, sem recursividade). Este parâmetro é
+opcional, e o valor padrão é <b>sub</b>.
+
+<item/> <b>filter</b> (<i>filtro de pesquisa</i>): critérios para a
+pesquisa de registros. Permite encontrar registros pela existência de um
+atributo ou pela comparação do valor deste atributo. Suporta comparação de
+múltiplos atributos com as operações <i>or</i>, <i>and</i> e <i>not</i>. Este
+parâmetro é opcional, e o valor padrão é <b>(objectClass=*)</b>, que retorna
+todos os registros. Opção detalhada na seção<ref>LDAPfilter</ref>. 
+
+<item/> <b>sizelimit</b> (<i>quantidade de registros</i>): indica o
+número máximo de registros resultantes. Esta opção é limitada pelo valor
+configurado no <i>Directory System Agent - DSA</i>. Este parâmetro é opcional.
+
+<item/> <b>timelimit</b> (<i>tempo de pesquisa</i>): indica o tempo
+máximo para produção do resultado. Esta opção é limitada pelo valor
+configurado no <i>Directory System Agent - DSA</i>. Este parâmetro é opcional.
+
+<item/> <b>result attribute</b> (<i>atributos retornados</i>): indica os
+atributos que devem ser retornados dos registros identificados pelo filtro de
+pesquisa. O caracter <b>+</b> representa os atributos operacionais. Este
+parâmetro é opcional, e o valor padrão é <b>*</b> que retorna todos os
+atributos dos registros identificados pelo filtro de pesquisa.
+
+</lista>
+
+    <b>Tarefa</b>: Pesquisar na RFC-4511 uma operação do protocolo LDAP que
+não foi descrita nesta seção.
+
+<subsecao>LDAP filter (sintáxe de pesquisa) (RFC4515)</subsecao>
+<nome>LDAPfilter</nome>
+
+    A operação de pesquisa (<i>search</i>) permite a utilização de operadores
+lógicos de igualdade '=', igualdade aproximada '~=', menor que '<=' e
+maior que '>=', assim como, operadores proposicionais de conjução '&'
+(<i>and</i>), de disjunção '|' (<i>or</i>) e negação '!' (<i>not</i>).
+
+<tabela>{|l|l|l|}
+    <lh><th>Operador</th><col/><th>Exemplo</th><col/><th>Descrição</th></lh>
+    <tr>=                <col/> (uid=reinaldo)      <col/>Atributo 'uid' igual a 'reinaldo'.</tr>
+    <tr>~=               <col/> (uid~=reynald)      <col/>Atributo 'uid' semelhante a 'reynald'.</tr>
+    <tr>&                <col/> (&(uid=rei)(sn=Carvalho)) <col/>Registro deve casar com ambas condições.</tr>
+    <tr>|                <col/> (|(uid=r*)(uid=s*)) <col/>Registros que casem com uma ou outra condição.</tr>
+    <tr>!                <col/> (!(uid=r*)) <col/>Registros que o atributo 'uid' não inicia com 'r'.</tr>
+    <legenda>Operadores do filtro de pesquisa</legenda>
+    <nome>tab:ldap-search</nome>
+</tabela>
+
+    Outros exemplos de consulta:
+
+<tabela>{|l|l|}
+    <lh><th>Exemplo</th><col/><th>Descrição</th></lh>
+    <tr>(objectClass=*)      <col/>Todos os registros, pois todos possuem o atributo objectClass.</tr>
+    <tr>(!(telephoneNumber=*))<col/>Registros que não possuam telefone cadastrado.</tr>
+    <tr>(mail=*@example.com)<col/>Registros de usuários que o e-mail é do domínio indicado.</tr>
+    <tr>(&(uid=a*)(!(uid=ana*)))<col/>Registros que começam com 'a', mas não começam com 'ana'.</tr>
+    <legenda>Exemplos de filtro de pesquisa</legenda>
+    <nome>tab:ldap-search2</nome>
+</tabela>
+
+    <b>Tarefa</b>: sugerir um filtro de pesquisa que retorne somente os
+registros de usuários que possuam números com DDD 91 cadastrados. Assuma
+que os atributos 'telephoneNumber' e 'homePhone' possam conter números
+telefônicos.
+
+\vskip 0.3cm
+
+    <b>Tarefa</b>: sugerir um filtro de pesquisa que retorne somente os
+registros de usuários que possuam números com DDD 91, com ou sem o
+código de país 55.
+
+\vskip 0.3cm
+
+    <b>Tarefa</b>: sugerir um filtro de pesquisa que retorne somente os
+registros de usuários que possuam números com DDD 91, com ou sem o
+código de país 55 e não possuam número de telefone celular (RFC-4524)
+cadastrado.
+
+<subsecao>Directory User Agent (DUA)</subsecao>
+
+    Os utilitários disponíveis no pacote <i>ldap-utils</i> implementam o
+protocolo LDAP, e assim operam como um <i>Directory User Agent</i> (DUA). A
+instalação é realizada conforme indicado:
+
+<comando>
+    # aptitude install ldap-utils
+</comando>
+
+    Os seguintes utilitários estão disponíveis: <b>ldapsearch</b>,
+<b>ldapadd</b>, <b>ldapdelete</b>, <b>ldapmodify</b>, <b>ldappasswd</b>,
+<b>ldapmodrdn</b>, <b>ldapcompare</b>, e possuem as seguintes opções em comum:
+
+<lista>
+
+<item/> <b>-h</b>: informa <i>hostname</i> ou IP do <i>Directory System Agent -
+DSA</i>, podendo ser substituída pela opção <b>-H</b>.
+
+<item/> <b>-H</b>: informa o <i>Uniform Resource Identifier - URI</i>
+<citar>URI</citar> do <i>Directory System Agent - DSA</i>, como
+<i>ldap://ldap.example.com:3389</i> ou
+<i>ldaps://ldap.example.com:636</i>. O prefixo <b>ldaps://</b> ativa o
+<i>Secure Sockets Layer - SSL</i> e não deve ser usado juntamente a opção
+<b>-Z</b>.
+
+<item/> <b>-Z</b>: ativa <i>Transport Layer Security - TLS</i>.
+
+<item/> <b>-x</b>: ativa autenticação.
+
+<item/> <b>-D</b>: informa o <i>Distinguished Name</i> do registro para autenticação.
+
+<item/> <b>-W</b>: ativa solicitação de senha do <i>Distinguished Name</i> no
+terminal, e pode ser substituída pela opção <b>-w 'senha'</b>
+
+<item/> <b>-w</b>: informa a senha do <i>Distinguished Name</i> na linha de
+comando.
+
+</lista>
+
+    Estes utilitários compartilham o arquivo de configuração
+<i>/etc/ldap/ldap.conf</i>, que pode ser utilizado para a definição de
+parâmetros comuns como <i>URI</i> e <i>BINDDN</i> (para todos) e <i>BASE</i>
+(para o <i>ldapsearch</i>), evitando assim, a digitação destas opções na
+execução do utilitário. Caso as opções sejam passadas na linha de comando,
+os valores do arquivo de configuração serão ignorados.
+
+<comandoNumerado>
+URI           ldap://ldap.example.com:389
+BASE          o=Universidade Federal
+BINDDN        cn=admin,o=Universidade Federal
+TLS_CACERT    /etc/ssl/certs/University_CA.cer
+# TLS_REQCERT never
+</comandoNumerado>
+
+<lista>
+
+<item/> <b>URI</b>: equivalente a opção <b>-H</b>.
+
+<item/> <b>BASE</b>: equivalente a opção <b>-b</b>.
+
+<item/> <b>BINDDN</b>: equivalente a opção <b>-D</b>.
+
+<item/> <b>TLS_CACERT</b>: caminho para o certificado que emitiu (assinou
+digitalmente) o certificado do <i>Directory System Agent - DSA</i>; necessário
+para garantir a autenticidade do servidor.
+
+<item/> <b>TLS_REQCERT</b>: desativa a verificação de autenticidade do
+certificado utilizado pelo <i>Directory System Agent - DSA</i> (não
+recomendado).
+
+</lista>
+
+<subsubsecao>ldapsearch</subsubsecao>
+
+    O utilitário <i>ldapsearch</i> é utilizado para realizar consultas ao
+<i>Directory System Agent - DSA</i>, e exibe as informações obtidas no
+formato <i>LDAP Data Interchange Format - LDIF</i>. O quadro abaixo possui a
+sinópse do <b>ldapsearch</b>:
+
+<comando>
+    $ ldapsearch -LLL -h <hostname> -x -D "<user DN>" -W
+                 -b "<base DN>" -s <scope> "<filter>" <attribute1> <attribute2> ...
+</comando>
+
+<lista>
+
+<item/> <b>-LLL</b>: remove os comentários entre os registros.
+
+<item/> <b>-b</b> '<i>base DN</i>': qualquer <i>Distinguished Name</i> pode
+ser utilizado como ponto de pesquisa.
+
+<item/> <b>-s</b> '<i>scope</i>': tipo de pesquisa, o padrão é <b>sub</b> e
+esta opção pode ser omitida (vide seção<ref>LDAPprotocol</ref>).
+
+<item/> <b>'filter'</b>: filtro de pesquisa, o padrão é
+<b>(objectClass=*)</b>, que retorna todos os registros (vide seção
+<ref>LDAPfilter</ref>). Esta opção pode ser omitida.
+
+<item/> <b>'attribute'</b>: o <i>'result attribute'</i> padrão é <b>'*'</b>
+(todos) e esta opção pode ser omitida. Pode-se utilizar <b>'+'</b> para
+obtenção dos atributos operacionais, ou <b>'-'</b> para nenhum atributo
+(somente o <i>DN</i>).
+</lista>
+
+    Exemplo de uso:
+
+<comando>
+    $ ldapsearch -LLL -h ldap.example.com
+                 -x -D "cn=admin,o=Universidade Federal" -W
+                 -b "o=Universidade Federal" "(uid=rei)" cn mail telephoneNumber
+</comando>
+
+<comandoNumerado>
+dn: cn=Reinaldo de Carvalho,o=Universidade Federal
+cn: Reinaldo de Carvalho
+mail: reinaldoc@example.com
+telephoneNumber: 91 5555-2222
+</comandoNumerado>
+
+
+<subsubsecao>ldapadd</subsubsecao>
+
+    O utilitário <i>ldapadd</i> é utilizado para a adição de registros ao
+<i>Directory System Agent - DSA</i> através de arquivos no formato 
+<i>LDAP Data Interchange Format - LDIF</i>. O quadro abaixo possui a
+sinópse do <b>ldapadd</b>:
+
+<comando>
+    $ ldapadd -h <hostname> -x -D "<user DN>" -W -f "<file>"
+</comando>
+
+<lista>
+<item/> <b>-f</b>: informa um arquivo no formato LDIF com registros a serem
+inseridos na base LDAP.
+</lista>
+
+    Exemplo de arquivo no formato LDIF:
+
+<comandoNumerado>
+dn: cn=Reinaldo de Carvalho,o=Universidade Federal
+objectClass: inetOrgPerson
+cn: Reinaldo de Carvalho
+sn: Carvalho
+mail: reinaldoc@example.com
+telephoneNumber: 91 5555-1111
+l:: QmVsw6ltIC0gUGFyw6E=
+userPassword: {SSHA}KchBFzrN7g3QpF391HUnqJzDR0s3aXj4
+</comandoNumerado>
+
+    Exemplo de uso:
+
+<comando>
+    $ ldapadd -h ldap.example.com -x -D "cn=admin,o=Universidade Federal"
+              -W -f user.ldif
+</comando>
+
+<subsubsecao>ldapdelete</subsubsecao>
+
+    O utilitário <i>ldapdelete</i> é utilizado para a remoção de registros do
+<i>Directory System Agent - DSA</i>. O quadro abaixo possui a sinópse do
+<b>ldapdelete</b>: 
+
+<comando>
+    $ ldapdelete -h <hostname> -x -D "<user DN>" -W "<DN>"
+</comando>
+
+<lista>
+<item/> <b>'DN'</b>: informa o <i>Distinguished Name</i> do registro que deve
+ser removido.
+</lista>
+
+    Exemplo de uso:
+
+<comando>
+    $ ldapdelete -h ldap.example.com -x -D "cn=admin,o=Universidade Federal"
+                 -W "cn=Reinaldo de Carvalho,o=Universidade Federal"
+</comando>
+
+<subsubsecao>ldapmodify</subsubsecao>
+
+    O utilitário <i>ldapmodify</i> é utilizado para a adicão, alteração ou
+remoção de atributos de registros do <i>Directory System Agent - DSA</i>. O
+quadro abaixo possui a sinópse do <b>ldapmodify</b>: 
+
+<comando>
+    $ ldapmodify -h <hostname> -x -D "<user DN>" -W -f "<file>"
+</comando>
+
+<lista>
+<item/> <b>-f</b>: informa arquivo no formato específico para modificação de
+registros.
+</lista>
+
+    Exemplo de arquivo no formato para modificações de registros:
+
+<comandoNumerado>
+dn: cn=Reinaldo de Carvalho,o=Universidade Federal
+changetype: modify
+replace: telephoneNumber
+telephoneNumber: 91 5555-5555
+-
+delete: mail
+-
+add: description
+description: Advanced User
+</comandoNumerado>
+
+    Exemplo de uso:
+
+<comando>
+    $ ldapmodify -h ldap.example.com -x -D "cn=admin,o=Universidade Federal"
+                 -W -f modify.ldif
+</comando>
+
+<subsubsecao>ldappasswd</subsubsecao>
+
+    O utilitário <i>ldappasswd</i> é utilizado para alteração do atributo
+<i>userPassword</i> de registros do <i>Directory System Agent - DSA</i>. O
+quadro abaixo possui a sinópse do <b>ldappasswd</b>: 
+
+<comando>
+    $ ldappasswd -h <hostname> -x -D "<user DN>" -W -S "<DN>"
+</comando>
+
+<lista>
+<item/> <b>-S</b>: ativa a solicitação da nova senha no terminal, e pode ser
+substituída pela opção <b>-s 'senha'</b>.
+<item/> <b>'DN'</b>: informa o <i>Distinguished Name</i> do registro que deve
+ter o atributo <i>userPassword</i> modificado.
+</lista>
+
+    Exemplo de uso:
+
+<comando>
+    $ ldappasswd -h ldap.example.com -x -D "cn=admin,o=Universidade Federal"
+                 -W -S "cn=Reinaldo de Carvalho,o=Universidade Federal"
+</comando>
+
+<subsubsecao>ldapmodrdn</subsubsecao>
+
+    O utilitário <i>ldapmodrdn</i> é utilizado para alteração do
+<i>Relative Distinguished Name</i> de registros do <i>Directory System Agent
+- DSA</i>. O quadro abaixo possui a sinópse do <b>ldapmodrdn</b>: 
+
+<comando>
+    $ ldapmodrdn -h <hostname> -x -D "<user DN>" -W -s "<new parent DN>"
+                 -f "<file>"
+</comando>
+
+<lista>
+<item/> <b>-s</b>: informa o novo pai (<i>parent</i>) do registro, alterando
+o <i>Distinguished Name</i>. Esta opção pode ser omitida para a alteração
+apenas do <i>Relative Distinguished Name</i>.
+</lista>
+
+    Exemplo de arquivo no formato para modificações de <i>Relative
+Distinguished Name</i> de registros:
+
+<comandoNumerado>
+cn=Reinaldo de Carvalho,o=Universidade Federal
+cn=Reinaldo Gil Lima de Carvalho
+
+cn=Administrador,o=Universidade Federal
+cn=Root
+</comandoNumerado>
+
+    Exemplo de uso:
+
+<comando>
+    $ ldapmodrdn -h ldap.example.com
+                 -x -D "cn=admin,o=Universidade Federal" -W -f rdn.ldif
+</comando>
+
+    Para a alteração apenas do pai (<i>parent</i>) do registro, deve
+utilizar a opção <b>-s</b> com o DN de destino e o arquivo no seguinte
+formato:
+
+<comandoNumerado>
+cn=Reinaldo de Carvalho,o=Universidade Federal
+cn=Reinaldo de Carvalho
+</comandoNumerado>
+
+    Exemplo de uso:
+
+<comando>
+    $ ldapmodrdn -h ldap.example.com -x -D "cn=admin,o=Universidade Federal"
+                 -s "ou=IDC,o=Universidade Federal" -W -f rdn.ldif
+</comando>
+
+    Resultando na alteração do DN 'cn=Reinaldo de Carvalho,o=Universidade Federal' para
+'cn=Reinaldo de Carvalho,ou=IDC,o=Universidade Federal', sendo que o registro
+'ou=IDC,o=Universidade Federal' deve ser criado previamente.
+
+<subsubsecao>ldapcompare</subsubsecao>
+
+    O utilitário <i>ldapcompare</i> é utilizado para comparação do valor de
+atributos de registros do <i>Directory System Agent - DSA</i>, e o retorno é
+<i>verdadeiro</i> ou <i>falso</i>. O quadro abaixo possui a sinópse do
+<b>ldapcompare</b>: 
+
+<comando>
+    $ ldapcompare -h <hostname> -x -D "<user DN>" -W "DN" "attribute: value"
+</comando>
+
+    Exemplo de uso:
+
+<comando>
+    $ ldapcompare -h ldap.example.com -x -D "cn=admin,o=Universidade Federal" -W
+                  "cn=Reinaldo de Carvalho,o=Universidade Federal"
+                  "telephoneNumber: 91 5555-5555"
+</comando>
+
+<subsecao>DSA-specific Entry (DSE)</subsecao>
+
+    A base LDAP nula (<i>-b ''</i>) é um registro chamado <i>DSA-specific
+Entry (DSE)</i> e contém atributos operacionais¹ que tem informações sobre
+o <i>Directory System Agent - DSA</i>. Em geral este registro deve ser
+acessível sem autenticação.
+
+    Um importante atributo do DSE é o <i>namingContexts</i> que contém as
+bases fornecidas por este DSA. Pode-se listar os atributos do DSE, como
+indicado abaixo:
+
+<comando>
+    $ ldapsearch -h ldap.example.com -x -LLL -b '' -s base +
+</comando>
+
+<comandoNumerado>
+dn:
+structuralObjectClass: OpenLDAProotDSE
+configContext: cn=config
+namingContexts: dc=nodomain
+namingContexts: o=Universidade Federal
+namingContexts: o=Empresa S/A
+supportedControl: 2.16.840.1.113730.3.4.18
+supportedControl: 2.16.840.1.113730.3.4.2
+supportedControl: 1.3.6.1.4.1.4203.1.10.1
+supportedControl: 1.2.840.113556.1.4.319
+supportedControl: 1.2.826.0.1.3344810.2.3
+supportedControl: 1.3.6.1.1.13.2
+supportedControl: 1.3.6.1.1.13.1
+supportedControl: 1.3.6.1.1.12
+supportedExtension: 1.3.6.1.4.1.4203.1.11.1
+supportedExtension: 1.3.6.1.4.1.4203.1.11.3
+supportedExtension: 1.3.6.1.1.8
+supportedFeatures: 1.3.6.1.1.14
+supportedFeatures: 1.3.6.1.4.1.4203.1.5.1
+supportedFeatures: 1.3.6.1.4.1.4203.1.5.2
+supportedFeatures: 1.3.6.1.4.1.4203.1.5.3
+supportedFeatures: 1.3.6.1.4.1.4203.1.5.4
+supportedFeatures: 1.3.6.1.4.1.4203.1.5.5
+supportedLDAPVersion: 3
+supportedSASLMechanisms: NTLM
+supportedSASLMechanisms: DIGEST-MD5
+supportedSASLMechanisms: CRAM-MD5
+entryDN:
+subschemaSubentry: cn=Subschema
+</comandoNumerado>
+
+    Pode-se listar diretamente as bases do DSA solicitando explicitamente o
+atributo <i>namingContexts</i> conforme indicado abaixo:
+
+<comando>
+    $ ldapsearch -h ldap.example.com -x -LLL -b '' -s base namingContexts
+</comando>
+
+<comandoNumerado>
+dn:
+namingContexts: dc=nodomain
+namingContexts: o=Universidade Federal
+namingContexts: o=Empresa S/A
+</comandoNumerado>
+
+\vskip 10cm
+
+¹: no DSA <i>Microsoft Active Directory®</i> os atributos do registro DSE são
+atributos de informação e não atributos operacionais, não sendo utilizado "+"
+na consulta.

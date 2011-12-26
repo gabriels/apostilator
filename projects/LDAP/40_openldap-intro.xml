@@ -1,0 +1,512 @@
+<capitulo>Introdução ao OpenLDAP (DSA)</capitulo>
+
+    O presente capítulo tem por objetivo descrever os arquivos utilizados
+diretamente e indiretamente pelo DSA OpenLDAP, e manipular a base LDAP:
+criando, alterando e removendo registros.
+
+    O <i>Directory System Agent - DSA</i> OpenLdap possui a seguinte
+topologia:
+
+<figura>
+    <tamanho>0.9</tamanho>
+    <arquivo>imgs/ldap-slapd</arquivo>
+    <legenda>Topologia do OpenLdap.</legenda>
+    <nome>fig:ldap-slapd</nome>
+</figura>
+
+    A inicialização do DSA OpenLdap ocorre através do <i>script
+/etc/init.d/slapd</i>. Este <i>script</i> lê o arquivo
+<i>/etc/default/slapd</i> em busca de parâmetros a serem utilizados na
+execução do <i>/usr/sbin/slapd</i>.
+
+    Em execução, o DSA OpenLdap lê o arquivo de configuração
+<i>/etc/ldap/slapd.conf</i> e abre os arquivos das bases definidas, aguardando
+por requisições através do protocolo LDAP. Estas requisições são consultadas
+ou aplicadas a base LDAP armazenada em <i>/var/lib/ldap</i>.
+
+    Com a instalação do DSA OpenLdap os seguintes componentes estão
+disponíveis:
+
+<lista>
+<item/> <b>slapd</b>: o <i>Directory System Agent - DSA</i> OpenLdap.
+
+<item/> <b>slappasswd</b>: utilitário para crição de <i>hash</i> compatível
+com o atributo <i>userPassword</i>. Não há interação com a base LDAP, podendo
+ser executado a qualquer momento. Exemplo de uso: <i>slappasswd -s senha</i>.
+
+<item/> <b>slaptest</b>: utilitário que verifica a sintáxe do arquivo de
+configuração. Não deve ser executado com o <i>slapd</i> em execução pois
+requer acesso a base de dados. Exemplo de uso: <i>slaptest
+-u</i> ou <i>slaptest -u -d 64</i>.
+
+<item/> <b>slapcat</b>: utilitário que realiza <i>dump</i> da base LDAP no
+formato LDIF, processo realizado diretamente a partir dos arquivos da base
+LDAP, sem comunicação com o DSA. O LDIF produzido inclui atributos
+operacionais e não poderá ser utilizado para inserção dos registros através do
+protocolo LDAP (<i>ldapadd</i>), sendo útil para o uso com o <i>slapadd</i>.
+
+Caso executado com DSA em execução, o LDIF pode não refletir o atual conteúdo
+dos registros da base LDAP. Exemplo de uso: <i>slapcat -b 'o=Universidade
+Federal' -l base1.ldif</i>.
+
+<item/> <b>slapadd</b>: utilitário que adiciona registros diretamente aos
+arquivos da base a partir de um LDIF. Este LDIF pode conter atributos
+operacionais. Nunca deve ser executado com o <i>slapd (DSA)</i> em execução.
+Exemplo de uso: <i>slapadd -b 'o=Universidade Federal' -l base1.ldif</i>.
+
+<item/> <b>slapindex</b>: utilitário que gera índices da base LDAP. A
+indexação dos atributos garante pesquisas mais eficientes, e é baseada
+na opção <i>index</i> do arquivo de configuração. Nunca deve ser executado
+com o <i>slapd (DSA)</i> em execução. Exemplo de uso: <i>slapindex -b
+'o=Universidade Federal'</i>.
+
+<item/> <b>slapacl</b>: utilitário analisador de ACLs, verifica se determinado
+usuário tem acesso a determinado registro. As ACLs são definidas através da
+opção <i>access</i> do arquivo de configuração. Nunca deve ser executado com
+o <i>slapd</i> em execução. Exemplo de uso: <i>slapacl -D
+'cn=admin, o=University' -b 'o=University' 'o/read:University'</i>.
+
+</lista>
+
+<subsecao>Instalação</subsecao>
+
+    A instalação do OpenLDAP proverá um arquivo de configuração funcional e
+criará uma base LDAP formada pelo registro raíz e um registro com
+permissão de escrita. O registro raíz é gerado a partir da saída
+do comando <i>dnsdomainname</i>, que por conseguinte obtêm o domínio da
+primeira entrada FQDN (<i>Fully Qualifield Domain Name</i>) no
+<i>/etc/hosts</i>.
+
+    O registro raíz será baseado no <i>objectClass domain</i>, e pode-se
+posteriormente alterá-lo para um registro baseado no <i>objectClass
+organization</i>, refletindo mais adequadamente a estrutura de uma
+organização.
+
+    Em caso de inexistência de entrada FQDN no arquivo /etc/hosts, a raíz
+da árvore LDAP será <i>dc=nodomain</i> e o registro com permissão de escrita
+será <i>cn=admin,dn=nodomain</i>. A configuração padrão em
+<i>/etc/ldap/slapd.conf</i>  possui ACLs que garante permissão de escrita
+a base LDAP a partir da autenticação com este registro, sendo possível a
+inserção, alteração e remoção de registros.
+
+    O procedimento abaixo realiza a instalação do DSA OpenLdap:
+
+<comando>
+    # aptitude install slapd
+</comando>
+
+    Com a instalação do <i>software slapd</i>, também são instalados os
+utilitários <i>slapcat</i>, <i>slapadd</i>, <i>slapindex</i>, entre
+outros. Estes utilitários realizam acessos diretamente a base LDAP,
+não devendo ser executados enquanto o serviço <i>slapd</i> estiver em execução.
+
+    Durante o curso, para visualização de log das consultas atendidas pelo
+serviço ldap, realize a seguinte configuração no /etc/ldap/slapd.conf:
+
+<comando>
+loglevel	256
+</comando>
+
+    Neste momento não preocupe-se em entender as configurações existentes no
+arquivo de configuração do <i>slapd</i>, pois o objetivo deste capítulo é a
+manipulação da base LDAP. No próximo capítulo, o arquivo de configuração será
+amplamente discutido.
+
+<subsecao>Recriando o registro raíz como <i>organization</i></subsecao>
+
+    A base LDAP reflete hierarquicamente a relação entre os objetos
+contidos. Assim, em uma base LDAP que conterá informações sobre uma única
+organização, pode-se formar o registro raíz baseado no <i>objectClass
+organization</i> e os registros filhos formados pelo <i>objectClass
+organizationalUnit</i>, que refere-se a unidades da organização.
+
+    Serão demonstrados os procedimentos de definição e inserção do registro
+raíz para realizar a inicialização de uma base LDAP, para isto, deve-se parar
+o DSA OpenLdap:
+
+<comando>
+    # /etc/init.d/slapd stop
+</comando>
+
+    Remover os arquivos da <i>database</i> #1:
+
+<comando>
+    # rm /var/lib/ldap/*
+</comando>
+
+    Alterar referências para a nova base no arquivo de configuração
+<i>/etc/ldap/slapd.conf</i>. Necessariamente as opções <i>suffix</i>
+(<i>l.4</i>) e as acls definidas na opção <i>access</i> (<i>l.8, l.15</i>).
+Estas opções atualmente fazem referência a base criada durante a instalação.
+
+<comandoNumerado>
+# Database #1 Configuration
+
+# ...
+suffix          "o=Universidade Federal"
+
+# ...
+access to attrs=userPassword,shadowLastChange
+        by dn="cn=admin,o=Universidade Federal" write
+        by anonymous auth
+        by self write
+        by * none
+
+# ...
+access to *
+        by dn="cn=admin,o=Universidade Federal" write
+        by * read
+</comandoNumerado>
+
+    Deve-se criar o arquivo <i>root.ldif</i> (apenas convenção, o nome de arquivos
+LDIF não estão relacionados ao seu conteúdo) contendo a especificação da
+nova raíz, assim como, e o registro que possuirá ACLs permitindo escrita
+a base LDAP. O <i>hash</i> para o atributo <i>userPassword</i> pode ser gerado
+através do comando <i>slappasswd -s senha</i>.
+
+<comandoNumerado>
+dn: o=Universidade Federal
+objectClass: organization
+o: University
+
+dn: cn=admin,o=Universidade Federal
+objectClass: simpleSecurityObject
+objectClass: organizationalRole
+cn: admin
+description: LDAP administrator
+userPassword: {SSHA}6Ng3TnWtsjw2jjt2NlBcSCJ+CoRVPMQ1
+</comandoNumerado>
+
+    Adicionar os registros iniciais a base LDAP (<i>/var/lib/ldap/</i>):
+
+<comando>
+    # slapadd -b 'o=Universidade Federal' -l root.ldif
+</comando>
+
+    Gerar índices. Os índices serão armazenados no diretório da base LDAP.
+
+<comando>
+    # slapindex -b 'o=Universidade Federal'
+</comando>
+
+    Alterar permissão de acesso aos arquivos da base LDAP para o usuário
+que o DSA OpenLdap é executado, o usuário <i>openldap</i>:
+
+<comando>
+    # chown -R -v openldap: /var/lib/ldap
+</comando>
+
+    Iniciar serviço <i>slapd</i>:
+
+<comando>
+    # /etc/init.d/slapd start
+</comando>
+
+    Testar a nova base através do protocolo LDAP:
+
+<comando>
+    $ ldapsearch -h ldap.example.com -LLL -b "o=Universidade Federal"
+                 -x -D "cn=admin,o=Universidade Federal" -W
+</comando>
+
+<br/>0.2cm
+
+    <b>Tarefa</b>: recriar a base LDAP #1 definindo um novo nome para a
+organização, e alterar o nome (<i>cn</i>) do registro com permissões de
+escrita para <b>Ldap Admin</b>. Após isto, altere as ACLs no arquivo de
+configuração <i>/etc/ldap/slapd.conf</i> para refletir o nome registro com
+permissão de escrita, e reinicie o <i>slapd</i>.
+
+<subsecao>Inserindo registros <i>organizationalUnit</i></subsecao>
+
+    Os registros formados a partir do <i>objectClass organizationalUnit</i>
+representam unidades ou setores da organização. Através do LDIF indicado,
+alguns registros serão criados. A partir do modelo abaixo ajuste o nome das
+unidades/setores para refletir a sua organização. 
+
+<comandoNumerado>
+dn: ou=Reitoria,o=Universidade Federal
+objectClass: organizationalUnit
+ou: Reitoria
+description: Registros da Reitoria
+
+dn: ou=Institutos,o=Universidade Federal
+objectClass: organizationalUnit
+ou: Institutos
+description: Registros dos Institutos
+
+dn: ou=Instituto de Exatas,ou=Institutos,o=Universidade Federal
+objectClass: organizationalUnit
+ou: Institutos de Exatas
+description: Registros do Instituto de Exatas
+
+dn: ou=Internet Data Center,o=Universidade Federal
+objectClass: organizationalUnit
+ou: Internet Data Center
+description: Registros do IDC
+</comandoNumerado>
+
+    Os comandos abaixo podem ser utilizados para a criação dos valores de
+atributos que possuam caracteres acentuados codificados no formato <i>base-64</i>:
+
+<comando>
+    $ echo -n 'ou=Instituto Tecnológico,ou=Institutos,o=Universidade Federal' |
+      openssl base-64
+b3U9SW5zdGl0dXRvIFRlY25vbMOzZ2ljbyxvdT1JbnN0aXR1dG9zLG89VW5pdmVy
+c2lkYWRlIEZlZGVyYWw=
+
+    $ echo -n 'Instituto Tecnológico' | openssl base-64
+SW5zdGl0dXRvIFRlY25vbMOzZ2ljbw==
+
+    $ echo -n 'Registros do Instituto de Tecnológico' | openssl base-64
+UmVnaXN0cm9zIGRvIEluc3RpdHV0byBkZSBUZWNub2zDs2dpY28=
+</comando>
+
+<comandoNumerado>
+dn:: b3U9SW5zdGl0dXRvIFRlY25vbMOzZ2ljbyxvdT1JbnN0aXR1dG9zLG89VW5pdmVy
+ c2lkYWRlIEZlZGVyYWw=
+objectClass: organizationalUnit
+ou:: SW5zdGl0dXRvIFRlY25vbMOzZ2ljbw==
+description:: UmVnaXN0cm9zIGRvIEluc3RpdHV0byBkZSBUZWNub2zDs2dpY28=
+</comandoNumerado>
+
+    Apesar da RFC-2849 (item 4) indicar a utilização da codificação base-64
+para atributos com valores que possuam caracteres acentuados, o utilitário
+<i>ldapadd</i> permite a utilização de acentos no formato UTF-8 em LDIFs.
+Assim o registro acima pode ser utilizado como:
+
+<comandoNumerado>
+dn: ou=Instituto Tecnológico,ou=Institutos,o=Universidade Federal
+objectClass: organizationalUnit
+ou: Instituto Tecnológico
+description: Registros do Instituto Tecnológico
+</comandoNumerado>
+
+    Adicionando através do protocolo LDAP:
+
+<comando>
+    $ ldapadd -h ldap.example.com
+              -x -D "cn=Ldap Admin,o=Universidade Federal" -W -f ou.ldif
+</comando>
+
+    <b>Tarefa</b>: indique qual filtro de pesquisa LDAP pode ser utilizado
+para identificar os registros que representam unidades da organização.
+
+    <br/>0.2cm
+
+    <b>Tarefa</b>: crie um registro formado pelo <i>objectClass
+organizationalUnit</i> que contenha atributos não utilizados nos exemplos
+acima. Consulte o schema core.schema para obter os atributos disponíveis.
+
+<subsecao>Inserindo registros <i>inetOrgPerson</i></subsecao>
+
+    Os registros formados a partir do <i>objectClass inetOrgPerson</i>
+representam pessoas de uma organização. Através do LDIF indicado,
+alguns registros serão criados. A partir do modelo abaixo ajuste o <i>DN</i>
+para as unidades/setores de sua organização. 
+
+    Para criar registros, usaremos o arquivo usuario.ldif com o seguinte modelo:
+
+<comandoNumerado>
+dn: cn=Reinaldo de Carvalho,ou=Internet Data Center,o=Universidade Federal
+objectClass: inetOrgPerson
+cn: Reinaldo de Carvalho
+sn: Carvalho
+mail: reinaldoc@example.com
+userPassword: {SSHA}2G7ghotAcBWj35Yz3YJyLc+OcCCiUAiL
+
+dn: cn=Fulano da Silva,ou=Reitoria,o=Universidade Federal
+objectClass: inetOrgPerson
+cn: Fulano da Silva
+sn: Silva
+mail: fulano@example.com
+userPassword: {SSHA}2G7ghotAcBWj35Yz3YJyLc+OcCCiUAiL
+</comandoNumerado>
+
+    Adicionando através do protocolo LDAP:
+
+<comando>
+    $ ldapadd -h ldap.example.com
+              -x -D "cn=Ldap Admin,o=Universidade Federal" -W -f usuario.ldif
+</comando>
+
+<subsecao>Removendo registros</subsecao>
+
+    O quadro abaixo indica como remover registros:
+
+<comando>
+    $ ldapdelete -h ldap.example.com -x -D "cn=Ldap Admin,o=Universidade Federal"
+                 -W "cn=Fulano da Silva,ou=Reitoria,o=Universidade Federal"
+</comando>
+
+<subsecao>Inserindo registros <i>posixAccount</i></subsecao>
+
+    Os registros formados a partir do <i>objectClass posixAccount</i>
+representam contas autenticáveis através dos sistemas Linux (PAM). A partir
+do modelo abaixo ajuste o <i>DN</i> para as unidades/setores de sua
+organização. 
+
+<comandoNumerado>
+dn: cn=Fulano da Silva,ou=Reitoria,o=Universidade Federal
+objectClass: inetOrgPerson
+objectClass: posixAccount
+cn: Fulano da Silva
+sn: Silva
+uid: fulano
+givenName: Fulano da Silva
+uidNumber: 2000
+gidNumber: 2000
+homeDirectory: /home/fulano
+loginShell: /bin/bash
+userPassword: {SSHA}TqUUQybe/Yco1nUREX0AYjqiya1wmo6T
+</comandoNumerado>
+
+    Adicionando através do protocolo LDAP:
+
+<comando>
+    $ ldapadd -h ldap.example.com
+              -x -D "cn=Ldap Admin,o=Universidade Federal" -W -f usuario.ldif
+</comando>
+
+<subsecao>Adicionando <i>objectClass posixAccount</i> a registros</subsecao>
+
+    Um registro pode ser formado por vários <i>objectClass</i>, assim pode-se
+adicionar o <i>objectClass posixAccount</i> (<i>AUXILIARY</i>) a um registro
+existente. Tomando como exemplo o registro <i>cn=Reinaldo de Carvalho,
+ou=Internet Data Center,o=Universidade Federal</i> que possui o
+<i>objectClass inetOrgPerson</i> (<i>STRUCTURAL</i>), pode-se adicionar o
+atributo <i>objectClass posixAccount</i> conforme indicado:
+
+    Para alterar registros, usaremos o arquivo usuario-mod.ldif com o seguinte modelo:
+
+<comandoNumerado>
+dn: cn=Reinaldo de Carvalho,ou=Internet Data Center,o=Universidade Federal
+changetype: modify
+add: objectClass
+objectClass: posixAccount
+-
+add: uid
+uid: rei
+-
+add: givenName
+givenName: Reinaldo
+-
+add: uidNumber
+uidNumber: 2001
+-
+add: gidNumber
+gidNumber: 2000
+-
+add: homeDirectory
+homeDirectory: /home/rei
+-
+add: loginShell
+loginShell: /bin/bash
+</comandoNumerado>
+
+    Aplicando a base:
+
+<comando>
+    $ ldapmodify -h ldap.example.com -x -D "cn=Ldap Admin,o=Universidade Federal"
+                 -W -f usuario-mod.ldif
+</comando>
+
+<subsecao>Inserindo registros <i>posixGroup</i></subsecao>
+
+    Os registros formados a partir do <i>objectClass posixGroup</i>
+representam grupos de sistemas Linux (PAM), utilizados para o controle de
+acesso a arquivos. Crie um registro baseado no <i>objectClass posixGroup</i>
+na raíz da sua base LDAP conforme indicado:
+
+<comandoNumerado>
+dn: cn=Grupo de Redes,o=Universidade Federal
+objectClass: posixGroup
+cn: Grupo de Redes
+gidNumber: 2000
+memberUid: ciclano
+memberUid: beltrano
+</comandoNumerado>
+
+    Adicionando através do protocolo LDAP:
+
+<comando>
+    $ ldapadd -h ldap.example.com
+              -x -D "cn=Ldap Admin,o=Universidade Federal" -W -f grupo.ldif
+</comando>
+
+    <b>Tarefa</b>: crie um registro baseado no <i>objectClass container</i>
+(<i>/etc/ldap/schema/local.schema</i>) para armazenar os grupos, e três
+registros baseados no <i>objectClass posixGroup</i> internos ao primeiro, a
+partir de um único LDIF. Lembre-se de utilizar diferentes <i>gidNumber</i>.
+
+<subsecao>Alterando o <i>Relative Distinguished Name - RDN</i></subsecao>
+
+    Exemplo de arquivo no formato para modificações de <i>Relative
+Distinguished Name</i> de registros:
+
+<comandoNumerado>
+cn=Reinaldo de Carvalho,o=Universidade Federal
+cn=Reinaldo Gil Lima de Carvalho
+</comandoNumerado>
+
+<comando>
+    $ ldapmodrdn -h ldap.example.com
+                 -x -D "cn=Ldap Admin,o=Universidade Federal" -W -f rdn.ldif
+</comando>
+
+    <b>Tarefa</b>: altere o RDN do registro <i>cn=Grupo de
+Redes,o=Universidade Federal</i> para <i>cn=Grupo de Suporte,o=Universidade
+Federal</i>.
+
+<subsecao>Alterando o <i>Distinguished Name - DN</i></subsecao>
+
+    Para a alteração apenas do pai (<i>parent</i>) do registro, deve
+utilizar a opção <b>-s</b> com o DN de destino e o arquivo no seguinte
+formato:
+
+<comandoNumerado>
+cn=Reinaldo de Carvalho,ou=Internet Data Center,o=Universidade Federal
+cn=Reinaldo de Carvalho
+</comandoNumerado>
+
+    Exemplo de uso:
+
+<comando>
+    $ ldapmodrdn -h ldap.example.com -x -D "cn=Ldap Admin,o=Universidade Federal"
+                 -s "ou=Reitoria,o=Universidade Federal" -W -f rdn.ldif
+</comando>
+
+    Resultando na alteração do DN 'cn=Reinaldo de Carvalho,ou=Internet Data
+Center,o=Universidade Federal' para
+'cn=Reinaldo de Carvalho,ou=Reitoria,o=Universidade Federal', sendo que o
+registro 'ou=Reitoria,o=Universidade Federal' já deve existir.
+
+<br/> 0.4cm
+
+    <b>Tarefa</b>: alterar o <i>DN</i> do registro <i>cn=Grupo de
+Suporte,o=Universidade Federal</i> para dentro do registro específico de
+grupos criado recentemente.
+
+<subsecao>Inserindo registros <i>groupOfNames</i></subsecao>
+
+    Os registros formados a partir do <i>objectClass groupOfNames</i>
+representam listas de Distinguished Names ou grupos de propósito geral
+(não sendo utilizados pela PAM ou Samba). O atributo <i>member</i> é
+utilizado para enumerar <i>DNs</i>. Crie um registro baseado no
+<i>objectClass groupOfNames</i> em sua base LDAP conforme indicado:
+
+<comandoNumerado>
+dn: cn=Admins,o=Universidade Federal
+objectClass: groupOfNames
+cn: Admins
+member: cn=Ldap Admin,o=Universidade Federal
+member: cn=Reinaldo de Carvalho,ou=Reitoria,o=Universidade Federal
+</comandoNumerado>
+
+    Adicionando através do protocolo LDAP:
+
+<comando>
+    $ ldapadd -h ldap.example.com
+              -x -D "cn=Ldap Admin,o=Universidade Federal" -W -f grupo.ldif
+</comando>
+

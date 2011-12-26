@@ -1,0 +1,209 @@
+<capitulo>Introdução ao curso</capitulo>
+
+    Seja bem-vindo ao <b>Curso de OpenLdap</b>. Este curso esta sendo
+fomentado pela <i>Centro de Tecnologia da Informação e Comunicação - CTIC</i>
+da <i>Universidade Federal do Pará</i> e ministrado por <i>Reinaldo Gil Lima
+de Carvalho</i>. Realiza(ou)-se de <i>06/12/2010 a 17/12/2010</i>.
+
+    Os procedimentos descritos neste material foram validados sob a
+distribuição Debian GNU/Linux Lenny, todavia a base teórica ministrada é o
+conhecimento fundamental para a aplicabilidade dos procedimentos técnicos sob
+qualquer sistema operacional.
+
+    Apesar das peculiaridades de cada sistema operacional o conteúdo será
+abordado de forma isenta, para que o participante tenha a possibilidade de
+utilizar o conhecimento adquirido no ambiente que lhe for mais adequado.
+
+    Neste capítulo, serão abordados os seguintes temas: licenciamento deste
+material, origem do <i>software</i> utilizado (executável ou do código fonte)
+e configurações essenciais da distribuição Debian GNU/Linux.
+
+<subsecao>Licença do material</subsecao>
+
+    Todas as marcas registradas são de propriedade de seus respectivos
+detentores, sendo apenas citadas neste material educacional.
+
+    O ministrante nem a fomentadora responsabilizam-se por danos causados
+devido a utilização das informações técnicas contidas neste material. Não há
+garantias de que este material está livre de erros, assim como, todos os
+sistemas em produção devem possuir <i>backup</i> antes de sua manipulação.
+
+    Este material esta licenciado sobre a <b>GNU Free Documentation
+License - GFDL</b> ou <b>Licença de Documentação Livre GNU</b> conforme descrito a
+seguir:
+
+<comando>
+    Copyright (c) 2009-2010 Reinaldo Gil Lima de Carvalho - reinaldoc@gmail.com
+
+    É garantida a permissão para copiar, distribuir e/ou modificar este documento
+sob os termos da Licença de Documentação Livre GNU (GNU Free Documentation
+License) Versão 1.2, publicada pela Free Software Foundation; com todas Seções
+Secundárias Invariantes incluindo textos de Capa Frontal, e sem Textos de Quarta
+Capa. Uma cópia da licença é incluída na seção intitulada "GNU Free Documentation
+License" ou "Licença de Documentação Livre GNU".
+</comando>
+
+    A <b>Licença de Documentação Livre GNU</b> permite que todo conteúdo
+esteja livre para cópia e distribuição, assim como que a propriedade autoral
+seja protegida. O objetivo é garantir que o conhecimento seja livre, assim como,
+garantir o reconhecimento ao autor. O autor recomenda ainda que este material
+seja sempre distribuído "como está", no formato original. Contribuições e
+sugestões de melhorias sobre este material podem ser enviadas ao autor e serão
+sempre bem vindas.
+
+<subsecao>Compilação de <i>software</i> X <i>software</i> da distribuição/sistema operacional</subsecao>
+
+    O acesso ao código fonte do <i>software</i> e sua compilação, é uma das
+liberdades propiciadas pelo <i>software livre</i>. Entretanto, o <i>software</i>
+também pode ser obtido em forma executável (compilada), e de forma integrada
+ao sistema operacional (empacotado), já estando pronto para utilização.
+Cada uma destas opções possui vantagens e desvantagens que serão enumeradas
+a seguir:
+
+    Características do <i>software</i> obtido na forma de executável (previamente compilado):
+
+<lista>
+<item/> <b>V:</b> Instalação rápida que requer menos espaço em disco; evita a
+compilação do <i>software</i>, assim como, a instalação de <i>software</i> de compilação
+(make, gcc, etc) e cabeçalhos de bibliotecas (libc6-dev, etc)
+
+<item/> <b>V:</b> Instalação automatizada de <i>software</i> e de bibliotecas
+necessárias (dependências) para o funcionamento do <i>software</i> principal.
+
+<item/> <b>V:</b> Versão testada pelo distribuidor do <i>software</i> (em geral
+o distribuidor do sistema operacional), e possivelmente livre de erros.
+
+<item/> <b>V:</b> Possibilita atualizações e correções de falhas de segurança
+de forma automática, e fornecida pelo distribuidor do sistema operacional.
+
+<item/> <b>V:</b> Facilita suporte externo devido ao método de instalação
+padronizado e utilização de versões invariantes do <i>software</i>.
+
+<item/> <b>V/D:</b> Pode não ser a versão mais nova do <i>software</i>, e não
+possuir funcionalidades mais recentes. Todavia, a utilização de versões 
+maduras, tende a fornecer maior estabilidade.
+
+</lista>
+
+
+    Características do <i>software</i> obtido a partir do código fonte:
+
+<lista>
+<item/> <b>D:</b> Instalação mais complexa e demorada, demanda instalação
+manual de bibliotecas externas.
+
+<item/> <b>D:</b> Atualizações e correções são manuais, exigindo atenção
+diária às atualizações necessárias para correções de falhas de segurança.
+
+<item/> <b>D:</b> Dificulta suporte externo pois não é um método de
+instalação padronizado.
+
+<item/> <b>V/D:</b> Permite utilizar a última versão do <i>software</i>,
+com os novos recursos, mas trata-se de código menos testado podendo possuir
+falhas não detectadas.
+
+<item/> <b>V:</b> Pode permitir um ganho de performace com a compilação com
+otimizações do processador, e também com o desligamento de recursos não
+utilizados do <i>software</i>.
+
+</lista>
+
+    Após o levantamento destas características, é notável que em ambientes
+corporativos a utilização de <i>software</i> fornecido por um distribuidor é
+essencial para continuidade da disponibilidade dos sistemas.
+
+    Diminui-se o esforço empregado para manter o parque tecnológico atualizado
+e livre de falhas. Dessa forma, o treinamento utilizará os pacotes fornecidos
+pelo distribuidor do sistema operacional escolhido.
+
+<subsecao>Debian GNU/Linux</subsecao>
+
+    Os sistemas operacionais baseados em tecnologias livres tendem a fornecer
+<i>software</i> que realizam instalações automatizadas. O Debian fornece os
+utilitários <b>apt-get</b> e <b>aptitude</b> para esta funcionalidade, sendo o
+segundo, sucessor e atualmente de uso recomendado.
+
+    O Debian fornece repositórios web que contém os <i>software</i>
+disponíveis para instalação, e estes são distribuídos em forma de pacotes:
+arquivos compactados com rotinas de pré/pós instalação e remoção, e
+informações sobre dependências, recomendações e sugestões de software
+adicionais.
+
+    O comportamento padrão do utilitário <i>aptitude</i> ao instalar um
+<i>software</i> é realizar a instalação das <b>dependências</b>, e também
+daqueles especificados como <b>recomendações</b>. Entretanto, este
+comportamento induz a instalação de <i>software</i> não requeridos, e
+demanda a utilização de espaço em disco adicional.
+
+    A instalação automática de <i>software</i> recomendado pode ser
+desabilitada através da adição da configuração abaixo ao arquivo
+<b>/etc/apt/apt.conf</b>:
+
+<lista>
+<item/>Debian Etch (aptitude 0.4.4):
+</lista>
+
+<comando>
+Aptitude::Recommends-Important "false";
+</comando>
+
+<lista>
+<item/>Debian Lenny (aptitude 0.4.11):
+</lista>
+
+<comando>
+Apt::Install-Recommends "false";
+</comando>
+
+    O utilitário <i>aptitude</i> também requer a configuração da fonte dos
+<i>software</i> a serem instalados, e isto é realizado no arquivo
+<b>/etc/apt/sources.list</b>, conforme indicado no quadro abaixo.
+
+<comando>
+deb http://ftp.br.debian.org/debian lenny main contrib non-free
+deb http://security.debian.org/ lenny/updates main
+</comando>
+
+    Caso a conectividade seja fornecida por um proxy via http, a seguinte
+configuração deve ser adicionada ao arquivo <b>/etc/apt/apt.conf</b>, com a
+devida adequação ao endereço IP do proxy:
+
+<comando>
+Acquire::http::Proxy "http://172.16.0.1:3128/";
+</comando>
+
+    Após a definição das fontes, é necessário o <i>download</i> da lista de
+<i>software</i> disponíveis, que é formada por informações como versão e descrição de
+cada <i>software</i>. Esse <i>download</i> deve ser realizado através do comando:
+
+<comando>
+    # aptitude update
+</comando>
+
+    A lista de <i>software</i> disponíveis pode ser consultada, como indicado
+no exemplo abaixo:
+
+<lista>
+<item/>Pesquisar pelo nome do <i>software</i>:
+</lista>
+
+<comando>
+    # aptitude search openldap
+</comando>
+
+<lista>
+<item/>Pesquisar nas descrições do <i>software</i>, equivalente ao <i>apt-cache
+search openldap</i>:
+</lista>
+
+<comando>
+    # aptitude search ~d'openldap'
+</comando>
+
+    Maiores informações sobre um determinado <i>software</i> podem ser obtidas
+como indicado a seguir:
+
+<comando>
+    # aptitude show slapd
+</comando>
+

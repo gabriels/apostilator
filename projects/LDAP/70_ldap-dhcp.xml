@@ -1,0 +1,140 @@
+<capitulo>Integração: DHCP</capitulo>
+
+    O <i>Dynamic Host Configuration Protocol Daemon</i> (dhcpd) é o serviço
+que implementa o protocolo DHCP e permite a distribuição automática de
+endereços IP. O processo inicia com o envio do pacote de descoberta do
+servidor DHCP (DHCP Discover) pela estação em <i>broadcast</i>, tendo por
+resposta a oferta de um endereço IP (DHCP Offer). A estação por sua vez,
+pode aceitar a oferta, através da requisição DHCP (DHCP Request), em que o
+servidor termina a comunicação confirmando o aceite da estação (DHCP
+Acknowledgement).
+
+<figura>
+    <tamanho>0.6</tamanho>
+    <arquivo>imgs/dhcp-protocol</arquivo>
+    <legenda>DHCP Protocol.</legenda>
+    <nome>fig:dhcp-protocol</nome>
+</figura>
+
+    Além de informar o endereço IP o qual a estação poderá utilizar, o
+servidor DHCP envia informações de máscara de rede, gateway, servidores DNS,
+além do período ao qual a estação deterá o direito de uso do IP cedido.
+
+    Estas informações, incluindo o range de IPs ao qual o IP cedido à
+estação será escolhido, podem ser armazenadas em uma base LDAP. Desta forma,
+o arquivo de configuração do servidor DHCP limitar-se-á a indicar informações
+de conexão a base LDAP. O diagrama a seguir contém a relação entre os elementos
+do servidor DHCP:
+
+<figura>
+    <tamanho>1.0</tamanho>
+    <arquivo>imgs/dhcp</arquivo>
+    <legenda>DHCP Server.</legenda>
+    <nome>fig:dhcp</nome>
+</figura>
+
+<subsecao>Instalação</subsecao>
+
+    A instalação do <b>dhcpd</b> é indicada a seguir:
+
+<comando>
+    # aptitude install dhcp3-server-ldap
+</comando>
+
+<subsecao>Configuração</subsecao>
+
+    /etc/dhcp3/dhcpd.conf
+
+<comandoNumerado>
+ldap-server "ldap.example.com";
+ldap-port 389;
+# ldap-username "uid=dhcp,cn=SystemAccounts,o=Universidade Federal";
+# ldap-password "goodpassword";
+ldap-base-dn "ou=DHCP,o=Universidade Federal";
+ldap-method dynamic;
+ldap-debug-file "/var/log/dhcp-ldap-startup.log";
+</comandoNumerado>
+
+<subsecao>Registros</subsecao>
+
+    O servidor <b>dhcpd</b> requer os seguintes registros na base LDAP:
+
+<lista>
+<item/> Registro que agrupará os registros relativos a servidores DHCP.
+</lista>
+
+<comandoNumerado>
+dn: ou=DHCP,o=Universidade Federal
+objectClass: organizationalUnit
+ou: DHCP
+</comandoNumerado>
+
+<lista>
+<item/> Registro que identifica o nome do servidor DHCP e faz referência ao
+registro que contém a configuração a ser utilizada. Desta forma, vários
+servidores DHCP podem apontar para uma única configuração. O termo
+<i>#SERVER#</i> deve ser trocado pelo nome da máquina do servidor DHCP.
+</lista>
+
+<comandoNumerado>
+dn: cn=#SERVER#,ou=DHCP,o=Universidade Federal
+objectClass: dhcpServer
+cn: #SERVER#
+dhcpServiceDN: cn=dhcpConfig-UFPA,ou=DHCP,o=Universidade Federal
+</comandoNumerado>
+
+<lista>
+<item/> Registro que contém a configuração do servidor DHCP.
+</lista>
+
+<comandoNumerado>
+dn: cn=dhcpConfig-UFPA,ou=DHCP,o=Universidade Federal
+objectClass: dhcpService
+objectClass: dhcpOptions
+dhcpStatements: ddns-update-style none
+dhcpStatements: authoritative
+dhcpStatements: default-lease-time 3600
+dhcpStatements: max-lease-time 28800
+dhcpOption: domain-name "example.com"
+dhcpOption: domain-name-servers 192.168.0.2
+dhcpOption: netbios-name-servers 192.168.0.1
+cn: dhcpConfig-UFPA
+dhcpPrimaryDN: cn=#SERVER#,ou=DHCP,o=Universidade Federal
+</comandoNumerado>
+
+<lista>
+<item/> Registros que contém o range de IPs a ser distribuído para uma
+determinada rede. É recomendado a utilização de um nome que descreva a rede;
+uma opção é a utilização o nome da interface de rede ao qual a rede esta
+conectada: <i>cn=eth0</i>. No exemplo abaixo, optou-se pelo termo
+<i>cn=RedeXYZ</i>.
+</lista>
+
+<comandoNumerado>
+dn: cn=RedeXYZ,cn=dhcpConfig-UFPA,ou=DHCP,o=Universidade Federal
+objectClass: dhcpSharedNetwork
+cn: RedeXYZ
+
+dn: cn=192.168.0.0,cn=RedeXYZ,cn=dhcpConfig-UFPA,o=Universidade Federal
+objectClass: dhcpSubnet
+objectClass: dhcpOptions
+dhcpNetMask: 24
+dhcpOption: routers 192.168.0.254
+cn: 192.168.0.0
+dhcpRange: 192.168.0.10 192.168.0.100
+</comandoNumerado>
+
+<lista>
+<item/> Registro que exemplifica o uso de IP fixo para um determinado endereço
+MAC.
+</lista>
+
+<comandoNumerado>
+dn: cn=Atalaia,cn=RedeXYZ,cn=dhcpConfig-UFPA,,ou=DHCP,o=Universidade Federal
+objectClass: dhcpHost
+dhcpStatements: fixed-address 192.168.0.200
+dhcpComments: Servidor Web
+cn: Atalaia
+dhcpHWAddress: ethernet aa:bb:cc:dd:ee:ff
+</comandoNumerado>
+

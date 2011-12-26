@@ -1,0 +1,97 @@
+<capitulo>Interfaces - Directory User Agents (DUA)</capitulo>
+
+<subsecao>Korreio</subsecao>
+
+    O Korreio é uma <i>Graphical User Interface - GUI</i> que fornece recursos
+para a manipulação de bases LDAP, administração do servidor CYRUS e gerência
+da fila do Postfix.
+
+    Especificamente ao protocolo LDAP, o Korreio permite a adição, modificação
+e remoção de registros. Possui diversos <i>wizard's</i> para os principais
+<i>objectClass</i> como <i>inetOrgPerson</i>, <i>posixAccount</i>,
+<i>sambaSamAccount</i>, <i>astSipPeer</i>, <i>radiusProfile</i>,
+<i>posixGroup</i>, <i>sambaGroupMapping</i>, <i>organization</i> e
+<i>organizationalUnit</i>.
+
+    Além de <i>wizard's</i> para a criação do conjunto de registros do Samba
+e DHCPD, incluindo interface para troca de senha. Também oferece um conversor
+de CSV para LDIF.
+
+<comando>
+    # aptitude install python-qt3 python-ldap python-pexpect python-smbpasswd
+</comando>
+
+    Acesse o site do projeto Korreio
+<i>http://sourceforge.net/projects/korreio</i>, e baixe o arquivo
+<b>korreio-YYYYMMDD.tar.gz</b>.
+
+<comando>
+    $ tar xzf korreio-YYYYMMDD.tar.gz
+    $ ./korreio-YYYYMMDD/korreio.py
+</comando>
+
+<subsecao>LUMA</subsecao>
+
+    O Luma é uma <i>Graphical User Interface - GUI</i> para o acesso a
+administração de bases LDAP, é baseado em <i>plugins</i>, e os seguintes estão
+disponíveis:
+
+    <i>Browser</i>: navegação e edição de atributos de registros. <i>Schema
+browser</i>: navegação dos <i>schemas</i> disponíveis no servidor.
+<i>Search</i>: pesquisa de registros. <i>Addressbook</i>: adição de registros
+de usuários. <i>Template</i>: definição de template para facilitar adição de
+registros customizados. <i>Massive User Creation</i>: criação de registros em
+massa. <i>Admin Utilities</i>: ferramentas administrativas como a troca de
+senha.
+
+<comando>
+    # aptitude install luma
+    $ luma
+</comando>
+
+<subsecao>LdapAdmin</subsecao>
+
+    O LdapAdmin é uma <i>Graphical User Interface - GUI</i> para o acesso e
+administração de bases LDAP, incluí suporte para grupos e contas POSIX, SAMBA
+e alguns objetos do Postfix.
+
+<comando>
+    # aptitude install wine
+</comando>
+
+    Acesse o site do projeto LdapAdmin
+<i>http://sourceforge.net/projects/ldapadmin/files/</i>, e baixe o executável
+<b>LdapAdminExe-X.Y.zip</b>. Acesse o site
+<i>google.com/search?q=wldap32.dll</i> e baixe a DLL <b>wldap32.dll</b>
+
+<comando>
+    $ unzip LdapAdminExe-X.Y.zip
+    $ unzip wldap32.zip
+    $ export WINEDLLOVERRIDES="wldap32=n"
+    $ wine LdapAdmin.exe
+</comando>
+
+<subsecao>phpLdapAdmin</subsecao>
+
+    O phpldapadmin é uma interface Web para o acesso a administração de bases
+LDAP, tem uma variedade de formulários para a adição de diversos tipos de
+registros.
+
+<comando>
+    # aptitude install phpldapadmin
+</comando>
+
+    O acesso pode ser realizado por:
+
+<comando>
+    http://localhost/phpldapadmin
+</comando>
+
+    O instalador do phpLdapAdmin preenche algumas configurações do arquivo
+<i>/etc/phpldapadmin/config.php</i>. Todavia no caso da existência de
+múltiplas bases deve-se corrigir as seguintes opções:
+
+<comando>
+    $ldapservers->SetValue($i,'server','base',array('o=University'));
+    $ldapservers->SetValue($i,'login','dn','cn=admin,o=University');
+</comando>
