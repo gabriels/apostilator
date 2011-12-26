@@ -1,7 +1,7 @@
 #!/usr/bin/perl -w
 #
-# apostilator.pl v0.2.6-20090223
-# Copyright (c) 2007-2009 Reinaldo de Carvalho <reinaldoc@gmail.com>
+# apostilator.pl v0.2.8-20111225
+# Copyright (c) 2007-2011 Reinaldo de Carvalho <reinaldoc@gmail.com>
 # Copyright (c) 2005-2006 Luiz C. B. Mostaço Guidolin <lcguid@gmail.com>
 #
 # This program is free software; you can redistribute it and/or modify
@@ -22,7 +22,7 @@
 
 use strict ;
 
-my $version = "v0.2.7-20091114";
+my $version = "v0.2.8-20111225";
 my $pdf_view = "xpdf";
 my $pdf_exec = "on";
 my $pdf_make = "on";
@@ -694,7 +694,7 @@ sub convert_latex2pdf() {
       print "Converting to PDF: indexes.";
     }
     chdir "$workdir/.tex";
-    system( "pdflatex base.tex >> $workdir/.apostilator.log 2>&1 &" );
+    system( "pdflatex base.tex >> ../.apostilator.log 2>&1 &" );
     my $i = 0;
     while (system("pgrep pdflatex >/dev/null") == 0) {
       if ($i > 30) {
@@ -705,7 +705,7 @@ sub convert_latex2pdf() {
       print ".";
     }
     print "\n";
-    if (system("tail -n5 $workdir/.apostilator.log | grep -q 'PDF file is not finished'") == 0) {
+    if (system("tail -n5 ../.apostilator.log | grep -q -e 'no output PDF file produced' -e 'PDF file is not finished'") == 0) {
         print "Apostilator-XML sintax error, more information on .apostilator.log.\n";
         exit;
     }
