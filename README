@@ -1,0 +1,156 @@
+Apostilator - A Latex Interface
+*******************************
+
+        Apostilator é uma interface baseada em um processador XML para
+    LaTeX que simplifica o processo de escrita de documentos.
+
+1. Dependencias
+***************
+
+    1.1 Debian
+    **********
+        # echo 'Aptitude::Recommends-Important "false";' >> /etc/apt/apt.conf
+        # aptitude install perl texlive texlive-latex-recommended \
+                           texlive-latex-extra texlive-fonts-extra
+
+    1.2 Gentoo
+    **********
+        # install: perl tetex latex-unicode
+
+2. Instalação
+*************
+
+    # cp apostilator.pl /usr/bin
+
+3. Arquitetura
+**************
+
+        O Apostilator é formado pelo executável "apostilator.pl" e o
+    diretório de projeto de cada apostila. O diretório pode ser indicado
+    através da opção "--workdir=" ou deve ser o diretório corrente ($PWD)
+    ao qual o software foi executado. A partir do diretório de um projeto o
+    Apostilator processará arquivos XML simplificados e gerará um arquivo PDF
+    formatado, contendo Capa, Sumário, Capítulos, Bibliografia e Apêndices.
+
+        O diretório base para as apostilas esta disponível em "project-example"
+    e é formado obrigatoriamente pelos seguintes arquivos:
+
+     /                           -- diretório do projeto com capítulos em XML
+     /imgs/                      -- diretório com imagens utilizadas nos XMLs
+     /Chapters.lst               -- Lista de arquivos, sem a extensão XML
+     /Appendix.lst               -- Lista de arquivos, sem a extenção XML
+     /Bibliography.bib           -- Bibliografias em formato BibTex
+     /.tex/                      -- diretório para conversões de formatos
+     /.tex/base.tex              -- estrutura básica em LaTeX do documento
+     /.tex/titlepage.tex         -- página de capa utilizada pelo base.tex
+     /.tex/titlepage.png         -- imagem utilizada na capa
+     /.tex/babelbib.sty          -- definições de bibliografia
+     /.tex/portuguese.bdf        -- definições de estrutura do LaTeX
+
+        O nome dos arquivos de capítulos e apêndices indicados respectivamente
+    em /Chapters.lst e em /Appendix.lst não devem possuir a extensão .xml.
+
+        A sintaxe dos capítulos e apêndices devem seguir o padrão
+    "apostilator-XML". A especificação esta contida no manual que pode ser
+     acessado através do projeto "project-manual" do Apostilator.
+
+        A apostila será criada em /Nome-do-projeto.pdf.
+
+4. Documentação do padrão "apostilator-XML"
+*******************************************
+
+        A sintaxe dos arquivos XML que formam o projeto esta descrita no
+    manual que foi criada com o apostilator, e esta disponível no projeto
+    "project-manual" distribuido junto com o software.
+
+        Para acessá-la, basta entrar no diretório deste projeto e
+    processá-lo:
+
+    $ cd /path/apostilator-version/project-manual
+    $ apostilator.pl
+    $ pdfviewer project-manual.pdf
+
+5. O Projeto
+************
+
+        Para iniciar o projeto de uma nova apostila, copie o "project-example"
+    renomeando para o nome do novo projeto:
+
+        # cp -a project-example /home/rei/Projetos-Apostilator/Postfix
+
+        Adicione os capítulos em formato XML no diretório do projeto (ex:
+    "./Postfix/Capitulo01.xml" e inclua o nome deste arquivo sem a extenção
+    .xml no arquivo "./Postfix/Chapters.lst"
+
+        As imagens devem ser salvas em: "./Postfix/imgs/"
+
+6. Executando
+*************
+
+    Modos de execução:
+      $ apostilator.pl --workdir=/home/rei/Apostila-Postfix [ OPCAO ]
+
+      $ cd /home/rei/Apostila-Postfix
+      $ apostilator.pl [ OPCAO ]
+
+    Configure o nome do autor e o título da Apostila (use --workdir):
+
+      $ apostilator.pl --skip-pdf --set-tile="Postfix para tráfego intenso"
+      $ apostilator.pl --skip-pdf --set-author="Reinaldo Gil Lima de Carvalho"
+
+    Para processar rapidamente o projeto (sem atualizar sumário e bibliografia):
+
+      $ apostilator.pl --preview
+
+7. Exemplos
+***********
+
+    7.1 Limpando arquivos temporários
+    *********************************
+        $ apostilator.pl --workdir=/home/rei/apostilator-openldap --clean
+
+    7.2 Efetuando backup
+    ********************
+        $ apostilator.pl --workdir=/home/rei/apostilator-bs7799 --backup
+
+    7.3 Atualizar rapidamente (sem atualizar indíces e bibliografia)
+    ****************************************************************
+        $ apostilator.pl --workdir=/home/rei/Apostila-Postfix --preview
+
+    7.4 Usando o --workdir ou dentro do projeto
+    *******************************************
+        $ apostilator.pl --workdir=/home/rei/Apostila-Postfix [ OPCAO ]
+
+        $ cd /home/rei/Apostila-Postfix
+        $ apostilator.pl [ OPCAO ]
+
+    7.5 Processar o prjeto, sem iniciar visualizador de PDF
+    *******************************************************
+        $ apostilator.pl --workdir=/home/rei/Apostila-Postfix --no-open-pdf
+
+        $ apostilator.pl --no-open-pdf
+
+8. Autor
+********
+    Copyright (C) 2007-2011 Reinaldo de Carvalho <reinaldoc@gmail.com>
+    Copyright (C) 2005-2006 Luiz C. B. Mostaço Guidolin <lcguid@gmail.com>
+
+9. Licença
+**********
+
+        O Apostilator é um software livre; você pode redistribuí-lo e/ou
+    modificá-lo dentro dos termos da GNU LGPL versão 3 como publicada pela
+    Fundação do Software Livre (FSF).
+
+        Este programa é distribuído na esperança que possa ser útil, mas SEM
+    NENHUMA GARANTIA; sem uma garantia implícita de ADEQUAÇÃO a qualquer
+    MERCADO ou APLICAÇÃO EM PARTICULAR. Veja a Licença Pública Geral GNU/LGPL
+    em português para maiores detalhes.
+
+        Você deve ter recebido uma cópia da GNU LGPL versão 3, sob o título
+    "LICENCA.txt", junto com esse programa. Se não, acesse
+    http://www.gnu.org/licenses ou escreva para a Fundação do Software Livre
+    (FSF) Inc., 51 Franklin St, Fifth Floor, Boston, MA 02111-1301, USA.
+
+Fim do README
+*************
