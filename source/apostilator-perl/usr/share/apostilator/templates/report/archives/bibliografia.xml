@@ -1,0 +1,10 @@
+<referencia>
+    <nome>citar_como</nome>
+    <titulo>Titulo do Artigo ou nome do livo</titulo>
+    <autor>nome dos autores separados por "and"</autor>
+    <editor>Revista ou Jornal. Se for livro colocar a editora</editor>
+    <volume>82</volume>
+    <pagina>47</pagina>
+    <ano>2007</ano>
+</referencia>
+

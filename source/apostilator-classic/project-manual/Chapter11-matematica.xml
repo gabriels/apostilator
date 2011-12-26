@@ -1,0 +1,37 @@
+<capitulo>Expressões Matemáticas e Equações</capitulo>
+<nome>sec:equacao</nome>
+
+Para adicionar equações ou expressões matemáticas a um texto devemos informar
+ao processador de texto que estamos entrando em um ambiente matemático. Se a
+expressão a ser entrada deve estar misturada ao texto como em
+<math>2^3=8</math>, então utilizamos a <i>tag</i> 'math', agora, se desejarmos
+entrar com uma equação que requer uma linha inteira só pra ela como a da Lei de
+Gauss elétrica, por exemplo, que é descrita por
+
+<equacao>
+\int\int_A \vec E.d\vec a = \int \int \int_V \nabla . \vec E dV = \frac{\rho}{\epsilon_0}
+<nome>eq:gauss</nome>
+</equacao>
+
+Para inserir a expressão matemática <math>2^3=8</math> o código utilizado foi:
+
+<comando>
+"...misturada ao texto como em <math>2^3=8</math>, então utilizamos..."
+</comando>
+
+O código utilizado para inserir a equação<ref>eq:gauss</ref> é o seguinte:
+
+<comando>
+<equacao>
+\int\int_A \vec E.d\vec a = \int \int \int_V \nabla . \vec E dV 
+= \frac{\rho}{\epsilon_0}
+<nome>eq:gauss</nome>
+</equacao>
+</comando>
+
+Note que a <i>tag</i> 'name' foi adicionada ao ambiente matemático para que
+fosse possível referir-se à fórmula pelo seu número.
+
+A sintaxe utilizada para elaboração de expressões matemáticas deve ser a do
+processador de texto \LaTeX2e e pode ser encontrada facilmente no livro:
+"The not so short introduction to Latex" (google: lshort filetype:pdf).

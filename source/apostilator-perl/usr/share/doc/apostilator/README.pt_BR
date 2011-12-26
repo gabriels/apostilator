@@ -1,0 +1,48 @@
+Apostilator (c) 2006-2007
+Reinaldo de Carvalho <rei@4linux.com.br>
+Luiz C. B. Mostaço Guidolin <lcguid@apostilator.org>
+
+O apostilator está registrado sob a lincesa GNU/GPL; maiores informações no
+arquivo COPYING distribuido junto com o apostilator.
+
+Requisitos:
+***********
+
+   - Os seguintes pacotes devem ser instalados:
+
+      * no Debian:
+      ------------
+          - perl
+          - tetex
+          - tetex-extra
+          - latex-ucs
+
+      * no Gentoo:
+      ------------
+          - perl
+          - tetex
+          - latex-unicode
+
+Instalação:
+***********
+
+   - Dentro do diretório criado ao descomprimir esta versão do apostilator
+     (provavelmente o mesmo diretório deste arquivo), execute como root:
+
+   # make install
+
+Remoção do Apostilator:
+**********************
+
+   - Da mesma forma que no ítem "Instalação", execute como root:
+
+   # make uninstall
+
+Outras informações:
+******************
+
+    - Para maiores informações e instruções de utilização, consulte o manual
+      disponível no site http://www.apostilator.org.
+
+Have fun! :)
+

@@ -1,0 +1,26 @@
+<capitulo>Exemplo de apêndice</capitulo>
+
+	Introdução ao apêndice de exemplo.
+
+<subsecao>Exemplo de seção</subsecao>
+
+	Introdução a seção de exemplo.
+
+<subsubsecao>Exemplo de subseção</subsubsecao>
+
+	Introdução a subseção de exemplo.
+
+<subsubsecao>Exemplo de subseção</subsubsecao>
+
+	Introdução a subseção de exemplo.
+
+<subsecao>Exemplo de segunda seção</subsecao>
+
+	Introdução a segunda seção de exemplo.
+
+	Exemplo de comando:
+
+<comando>
+# echo xxxx > /dev/null
+</comando>
+

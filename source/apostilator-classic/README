@@ -1,0 +1,129 @@
+Apostilator Classic - A Latex Interface
+***************************************
+Copyright (C) 2007-2011 Reinaldo de Carvalho <reinaldoc@gmail.com>
+Copyright (C) 2005-2006 Luiz C. B. Mostaço Guidolin <lcguid@gmail.com>
+
+1. Apostilator Classic Website
+******************************
+
+    http://apostilator.sf.net
+
+2. Dependencias
+***************
+
+    2.1 Debian
+    **********
+        # echo 'Aptitude::Recommends-Important "false";' >> /etc/apt/apt.conf
+        # aptitude install perl texlive texlive-latex-recommended texlive-latex-extra texlive-fonts-extra
+
+    2.2 Gentoo
+    **********
+        # install: perl tetex latex-unicode
+
+3. Instalação
+*************
+
+    # cp apostilator.pl /usr/bin
+
+4. Instruções
+*************
+
+        O Apostilator é formado pelo executável "apostilator.pl" os projetos
+    de apostilas. A apostila pode ser indicada através da opção "--workdir="
+    ou deve ser o diretório corrente ($PWD) ao qual o software foi executado.
+
+        O diretório base para as apostilas esta disponível em "project-example"
+    e é formado obrigatoriamente pelos seguintes arquivos:
+     /                           -- diretório repositório arquivos .xml
+     /imgs/                      -- diretório com imagens utilizadas nos XMLs
+     /Chapters.lst               -- Lista de arquivos, sem a extensão XML
+     /Appendix.lst               -- Lista de arquivos, sem a extenção XML
+     /Bibliography.bib           -- Bibliografias em formato BibTex
+     /.tex/                      -- diretório para conversões de formatos
+     /.tex/base.tex              -- estrutura básica em LaTeX do documento
+     /.tex/titlepage.tex         -- página de capa utilizada pelo base.tex
+     /.tex/titlepage.png         -- imagem utilizada na capa
+     /.tex/babelbib.sty          -- definições de bibliografia
+     /.tex/portuguese.bdf        -- definições de estrutura do LaTeX
+
+        O nome dos arquivos indicados em /Chapters.lst e /Appendix.lst não
+    devem possuir a extensão .xml.
+
+        A sintaxe dos capítulos e apendices devem seguir o padrão
+    "apostilator-XML". A especificação esta contida no manual que pode ser
+     acessado através do projeto "project-manual" do Apostilator.
+
+        A apostila será criada em /Nome-do-projeto.pdf.
+
+5. Padrão "apostilator-XML"
+***************************
+
+        A sintaxe dos documentos do projeto esta descrita na Apostila criada
+    com o próprio apostilator no projeto "project-manual".
+        Para acessá-la, basta entrar no diretório deste projeto e compilá-la:
+
+    $ cd /path/apostilator-version/project-manual
+    $ apostilator.pl
+
+6. O Projeto
+************
+
+        Para iniciar o projeto de uma nova apostila, copie o "project-example"
+    renomeando para o nome do novo projeto:
+
+        # cp -a project-example /home/rei/Projetos-Apostilator/Postfix
+
+        Adicione os capítulos em formato XML no diretório do projeto (ex:
+    "./Postfix/Capitulo01.xml" e inclua o nome deste arquivo sem a extenção
+    .xml no arquivo "./Postfix/Chapters.lst"
+
+        As imagens devem ser salvas em: "./Postfix/imgs/"
+
+7. Executando
+*************
+
+    Modos de execução:
+      $ apostilator.pl --workdir=/home/rei/Apostila-Postfix [ OPCAO ]
+
+      $ cd /home/rei/Apostila-Postfix
+      $ apostilator.pl [ OPCAO ]
+
+    Configure o nome do autor e o título da Apostila (use --workdir):
+
+      $ apostilator.pl --skip-pdf --set-tile="Postfix para tráfego intenso"
+      $ apostilator.pl --skip-pdf --set-author="Reinaldo Gil Lima de Carvalho"
+
+    Para compilar somente os capítulos (sem atualizar sumário e bibliografia):
+
+      $ apostilator.pl --preview
+
+8. Exemplos
+***********
+
+    8.1 Limpando arquivos temporários
+    *********************************
+        $ apostilator.pl --workdir=/home/rei/apostilator-openldap --clean
+
+    8.2 Efetuando backup
+    ********************
+        $ apostilator.pl --workdir=/home/rei/apostilator-bs7799 --backup
+
+    8.3 Atualizar rapidamente (sem atualizar indíces e bibliografia)
+    ****************************************************************
+        $ apostilator.pl --workdir=/home/rei/Apostila-Postfix --preview
+
+    8.4 Usando o --workdir ou dentro do projeto
+    *******************************************
+        $ apostilator.pl --workdir=/home/rei/Apostila-Postfix
+
+        $ cd /home/rei/Apostila-Postfix
+        $ apostilator.pl
+
+    8.5 Compilar prjeto, sem iniciar visualizador de PDF
+    ****************************************************
+        $ apostilator.pl --workdir=/home/rei/Apostila-Postfix --no-open-pdf
+
+        $ apostilator.pl --no-open-pdf
+
+Fim do README
+*************

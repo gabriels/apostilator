@@ -1,0 +1,57 @@
+<capitulo>Citando tabelas, figuras ou capítulos</capitulo>
+<nome>sec:citando</nome>
+
+Um dos atributos de uma tabela ou de uma figura (sendo ela um gráfico, um
+diagrama ou mesmo um desenho) é a sua numeração. Em um texto, todas as tabelas
+e figuras devem ser numerados e quando nos referimos a elas devemos fazer
+referência a esse número. Entretanto não precisamos nos preocupar com o
+número dos capítulos, subseções, tabelas ou figuras, o próprio software
+controla a numeração. 
+
+Sendo assim, a forma mais prática de fazer referência a
+uma tabela, figura, capítulo ou subseção é definindo um nome para o objeto
+desejado e depois fazer referência a esse nome, por exemplo: se eu desejo citar
+o número da seção que está sendo explicado como trabalhar com listas, basta eu
+dizer que ela é a seção<ref>sec:listas</ref>. Não, eu não inclui o número dessa
+seção manualmente, mas sim da seguinte forma:
+
+Quando inicio um capítulo eu adiciono o seguinte conjunto de <i>tags</i>:
+
+<comando>
+<capitulo>Como fazer referência a um capítulo ou tabela ou...</capitulo>
+</comando>
+
+Mas, para que eu possa citar esse capítulo pelo seu número eu tenho que
+adicionar um outro conjunto adicional de <i>tags</i> atribuindo um nome à esse 
+capítulo. Isso se faz utilizando as <i>tags</i> 'nome' da seguinte forma:
+
+<comando>
+<capitulo>Como fazer referência a um capítulo ou tabela ou...</capitulo>
+<nome>sec:referencia</nome>
+</comando>
+
+Dessa forma, atribuímos o nome 'sec:referencia' ao capítulo 'Como fazer
+referência a ...'.
+
+Uma vez atribuído um nome ao capítulo ou subseção basta fazer referência ao
+nome dele da seguinte forma:
+
+<comando>
+Estou fazendo referência ao capítulo<ref>sec:referencia</ref>
+</comando>
+
+O nome entre as <i>tags</i> 'ref' será substituído pelo numero da seção que
+possui como nome 'sec:referencia'
+
+O princípio para adicionar nomes a tabelas, figuras e equações é o mesmo e
+será mostrado nas seções<ref>sec:tabelas</ref>, <ref>sec:figuras</ref> e
+<ref>sec:equacao</ref> respectivamente.  Entretanto a forma de fazer
+referência a elas é a mesma!
+
+Para citar uma bibliografia use:
+<comando>
+Conforme o TANENBAUM <citar>Test1</citar>, etc...
+</comando>
+
+Gerando: Conforme o TANENBAUM <citar>Test1</citar>, etc...
+

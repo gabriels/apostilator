@@ -1,0 +1,28 @@
+Este diretório deve conter todos os arquivos do seu trabalho. Para fins de
+organização, devem ser criados arquivos individuais para cada capítulo ou
+apêndice. Além disso, sugerimos que o nome dos arquivos cujo conteúdo pertença a um
+capítulo tenham o prefixo "cap_" e arquivos cujo conteúdo pertença a um apêndice
+tenham o prefixo "ap_".
+
+Exemplos:
+
+- se o arquivo tem o conteúdo do capítulo chamado "Introdução", o nome do arquivo
+  seja algo do tipo:
+
+  cap_introducao.xml
+
+- se o arquivo tem o conteúdo do apêndice intitulado "Tabelas de Referência", o
+  nome do arquivo seja algo do tipo:
+
+  ap_tab_referencia.xml
+
+Diretório imgs:
+  
+  No diretório imgs devem estar armazenados os arquivos de imagens e figuras do
+  seu trabalho. Os formatos suportados são, preferencialmente, PNG e JPG.
+
+OBS: note que os nomes de arquivo nunca têm espaços, acentos.
+OBS2: o arquivo contendo as referências bibliográficas deve ter sempre o nome:
+"bibliografia.bib"
+
+Luiz C. B. Mostaço Guidolin - <lcguid@apostilator.org>

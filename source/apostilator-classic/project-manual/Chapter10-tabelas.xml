@@ -1,0 +1,26 @@
+<capitulo>Construindo tabelas</capitulo>
+<nome>sec:tabelas</nome>
+
+Os itens mais complexos a serem inseridos em um documento utilizando essa linguagem
+são as tabelas.
+
+<comando>
+    <tabela>{|l|c|r|}
+        <lh><th>Col 1</th> <col> <th>Col 2</th> <col> <th>Col 3</th></lh>
+        <tr> à esquerda <col> centralizado <col> à direita </tr>
+        <tr> texto      <col> mais texto   <col> muito texto </tr>
+        <tr> l = left   <col> c = center   <col> r = right   </tr>
+    </tabela>
+</comando>
+
+O resultado dessa tabela é o seguinte:
+
+    <tabela>{|l|c|r|}
+        <lh><th>Col 1</th> <col> <th>Col 2</th> <col> <th>Col 3</th></lh>
+        <tr> à esquerda <col> centralizado <col> à direita </tr>
+        <tr> texto      <col> mais texto   <col> muito texto </tr>
+        <tr> l = left   <col> c = center   <col> r = right   </tr>
+        <legenda>tabela exemplo</legenda>
+        <nome>tab:exemplo</nome>
+    </tabela>
+

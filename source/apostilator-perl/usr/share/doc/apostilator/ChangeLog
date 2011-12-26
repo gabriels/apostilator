@@ -1,0 +1,110 @@
+20080102
+- Comandos do apostilator redefinidos (veja apostilator --help);
+- Estrutura do diretório de trabalho alterada (veja
+  /usr/share/doc/apostilator-<version>/MIGRATION) ;
+- Criado arquivo de configuração em /etc/apostilator.conf e, opcionalmente
+  em ~/.apostilator.conf;
+- Criado arquivos para criação de tags personalizadas em
+  ~/<project_dir>/.tags.xml e criação de macros de LaTeX personalizadas em
+  ~/.macros.tex;
+- A compatibilidade de tags foi mantida;
+- Manual foi retirado para reformulação.
+  * Luiz C. B. Mostaço Guidolin <lcguid@apostilator.org>
+
+20071224
+- Alterações no core do programa;
+- O apostilator foi modularizado;
+- Alterações para que seja possível trabalhar com templates foram efetuadas;
+  * Luiz C. B. Mostaço Guidolin <lcguid@apostilator.org>
+
+20071116
+- Executável renomeado de apostilator.pl para apostilator
+  * Luiz C. B. Mostaço Guidolin <lcguid@apostilator.org>
+
+20070829
+- Crie a função readTags que lê as tags principais de um arquivo padrão e as
+tags personalizadas de um arquivo definido pelo usuário;
+- Comecei a converter o apostilator para enquadrar-se no FHS:
+  -> as tags padrão estão em: 
+    /usr/share/apostilator/tags/tags.xml.pt_BR
+  -> o projeto exemplo deve ficar localizado em:
+    /usr/share/doc/apostilator/project-example.
+  * Luiz C. B. Mostaço Guidolin <lcguid@apostilator.org>
+
+20070824
+- Efetuadas correções das frases em Inglês;
+- Adicionei informações relativas ao Gentoo no README
+- Retirei (comentei) a verificação de existência dos binátios: latex-ucs-discovermacro, latex-ucs-latexout não utilizados e inexistentes no Gentoo.
+  * Luiz C. B. Mostaço Guidolin <lcguid@apostilator.org>
+
+20070823
+- Adicionada opção --skip-summary para não gerar capítulo de resumo (O pulo do gato)
+- Corrigido backup para nomes do diretório com espaço e hífen
+  * Reinaldo de Carvalho <rei@4linux.com.br> 
+
+20070821
+- Adicionada verficação se PDF foi gerado com sucesso.
+- Correção de falha na detecção do workdir.
+- Melhoria na rotina de backup.
+- README revisado e ampliado.
+  * Reinaldo de Carvalho <rei@4linux.com.br> 
+
+20070819
+- Todo código foi revisado e re-escrito.
+- Capítulo com referências bibliográficas não é inserido caso não haja
+  bibliografias.
+- MakeFile foi removido.
+- Novas opções:
+     -a=,    --set-author=          Set project Author. Use slash before spaces.
+     -t=,    --set-title=           Set project title.  Use slash before spaces.
+     -w=,    --workdir=             Set workdir instead PWD.
+     -n ,    --no-open-pdf          Do not exec PDF viewer
+     -b ,    --backup               Build a tar.gz with necessary files.
+     -c ,    --clean                Clean temporary files.
+     -l ,    --all-latex-stages     Make all LaTeX stages.
+     -o ,    --only-chapters        Default action.
+     -s ,    --skip-pdf             Do anything, but dont build PDF.
+     -m ,    --xml-manual           Learn to write apostilator-XML
+     -h ,    --help                 Show this help.
+     -v ,    --version              Print program version.
+- Adicionado parser para algumas tags XML.
+- Outras coisas que não lembro.. :)
+  * Reinaldo de Carvalho <rei@4linux.com.br> 
+
+20070818
+
+- Adicionado tag <resumo></resumo> para criação automática do capítulo
+  "O pulo do Gato".
+- Corrigida criação dos links tex/imgs => ../Apostila/imgs e
+  tex/bibliografia.bib => ../Apostila/bibliografia.bib.
+- Adicionado parser de verificação de sintaxe da bibliografia.
+  * Reinaldo de Carvalho <rei@4linux.com.br> 
+
+20070802
+
+- Suporte a XML self-closed tags: <item/> <col/> <quebraPagina/> <linha/>,
+  muitos editores de XML não exibem corretamente tags que não possuem
+  delimitadordo final.
+  * Reinaldo de Carvalho <rei@4linux.com.br>
+
+20070511
+
+- melhorias no README referente ao BugReport enviado por Cesar Domingos 
+  e Tiago Japa;
+- incluido controle de versão no apostilator, vide arquivo version_xxx;
+- implementado um target do make, chamado backup que realiza backup do
+  trabalho;
+
+20070509
+- manual atualizado para incluir bibliografia e tags: lpi e rh;
+- adicionado suporte as tags lpi e rh
+
+20070423
+
+- Adicionado suporte a bibliografia: arquivo Apostila/bibliografia.bib;
+- Adicionado suporte a caracteres "estranhos" como <, > e &;
+- Adicionado um arquivo .vimrc com teclas de atalho para o apostilator;
+- Manual do apostilator atualizado;
+- tag comandoNumerado adicionada ;
+- Software registrado sob GPL - Guidolin Public License...ooops digo GNU 
+  Public License;

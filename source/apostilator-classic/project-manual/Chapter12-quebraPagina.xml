@@ -1,0 +1,21 @@
+<capitulo>Quebra de página</capitulo>
+
+Há momentos em que o processador de texto não decide muito bem em que momento
+ele deve iniciar uma nova página. Quando isso ocorrer o autor deve inserir
+manualmente uma tag
+
+<comando>
+	<quebraPagina>
+</comando>
+
+diretamente no local onde ele deseja que seja iniciada uma nova página.
+
+Esse comando entretanto deve ser utilizado <b>apenas</b> quando o texto
+estiver concluído e for o momento de elaborar a versão final do documento.
+Essa condição deve ser satisfeita uma vez que enquanto o autor ainda está
+inserindo informações no documento, o processador irá alterar sempre a
+apresentação final de forma a acomodar o novo conteúdo inserido. Sendo assim,
+qualquer intervenção por parte do autor poderá prejudicar a apresentação
+final.
+
+texto \ldots

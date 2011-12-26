@@ -1,0 +1,22 @@
+# Aqui deve estar a lista de arquivos a serem inseridos no trabalho.
+#
+# Regras:
+#
+# - apenas o nome do arquivo (sem extensao), deve ser adicionado;
+# - deve haver apenas um nome por linha
+# - o nome do arquivo e 'case sensitive', ou seja, letras maiusculas sao
+#   diferentes de minusculas!
+# - a ordem de listagem do arquivo e a mesma que ele sera inserido no 
+#   trabalho.
+#
+# Exemplo:
+#
+# para inserir o arquivo: 'cap_introAssunto.xml' em seu trabalho, deve haver
+# uma linha aqui nesse arquivo da contendo apenas o nome: 
+# 'cap_introAssunto'. Demais arquivos devem ser inseridos cada um em uma 
+# linha
+#
+# Luiz C. B. Mostaço Guidolin - <lcguid@apostilator.org>
+#
+# Inclua seus arquivos a partir da proxima linha:
+

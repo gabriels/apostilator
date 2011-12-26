@@ -1,0 +1,23 @@
+# Aqui deve estar a lista de arquivos a serem inseridos como APENDICE 
+# neste trabalho.
+#
+# Regras:
+#
+# - apenas o nome do arquivo (sem extensao), deve ser adicionado;
+# - deve haver apenas um nome por linha
+# - o nome do arquivo e 'case sensitive', ou seja, há diferenca entre letras
+#   maiusculas e minusculas.
+# - a ordem de listagem do arquivo e a mesma que ele sera inserido no
+#   trabalho.
+#
+# Exemplo:
+#
+# para inserir o arquivo: 'ap_Assunto.xml' na apostila, deve haver
+# uma linha aqui nesse arquivo contendo apenas o nome: 
+# 'ap_Assunto'. Os demais arquivos de apendice devem ser inseridos cada
+# um em uma linha.
+#
+# Luiz C. B. Mostaço Guidolin - <lcguid@apostilator.org>
+#
+# Inclua seus arquivos a partir da proxima linha:
+

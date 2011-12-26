@@ -1,0 +1,607 @@
+#!/usr/bin/perl -w
+#
+# apostilator.pl v0.2.4-20070823
+# Copyright (c) 2007      Reinaldo de Carvalho <rei@4linux.com.br>
+# Copyright (c) 2006-2007 Luiz C. B. Mostaço Guidolin <lcguid@apostilator.org>
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  
+# USA
+# 
+
+use strict ;
+require "/usr/lib/apostilator/libapostilator.ph" ;
+#use Term::Complete ; # for word completion (like bash completion) see man
+#my @completion_list = qw( init help version clean backup final view -y) ;
+#$input = Complete('apostilator', @completion_list);
+
+my %confs = ( "VERSION" => "1.0.0" ,
+              "PDF_VIEWER" => "xpdf" ,
+              "AUTO_SHOW_PDF" => "true" ,
+              "MAKE_PDF" => "true" ,
+              "BACKUP_ROTATE" => 3
+          ) ;
+
+my $workdir = $ENV{PWD} || readlink "/proc/self/cwd" ;
+my $tex_dir = "$workdir/.tex" ;
+my $synthesis  = "false" ;
+my $latex_3_times = "false" ;
+my $synthesisTitle = "Synthesis" ;
+my $bibliography = "false" ;
+
+# Reads configuration files 
+my $conf_file = "/etc/apostilator.conf" ;
+&read_confs( $conf_file , \%confs ) if( -f $conf_file ) ;
+
+$conf_file = "$ENV{HOME}/.apostilator.conf" ;
+&read_confs( $conf_file , \%confs ) if( -f $conf_file ) ;
+
+open VERSION, "/usr/share/apostilator/version" or die "$!" ;
+    $confs{VERSION} = <VERSION> ;
+    chomp $confs{VERSION} ;
+close VERSION ;
+
+# Parses the command line
+if( defined @ARGV )
+{
+  while( $#ARGV >= 0 )
+  {
+    $_ = shift @ARGV ;
+
+    if( /^(help|-h|--help)$/ ) { &usage(); exit; }
+    elsif( /^(version|--version)$/ ) { &version() ; exit; }
+    elsif( /^(init)$/ && $#ARGV <= 1 )
+      { &start_new_project( shift @ARGV , shift @ARGV ) ; exit ; }
+    elsif( /^(clean)$/ ) { &clean() ; exit ; } 
+    elsif( /^(author)$/ )
+      { &set_work_param( "autor" , shift @ARGV ) ; exit ; }
+    elsif( /^(title)$/ )
+      { &set_work_param( "titulo" , shift @ARGV ) ; exit ; }
+    elsif( /^(footer)$/ )
+      { &set_work_param( "rodape" , shift @ARGV ) ; exit ; }
+    elsif( /^(backup)$/ ) { &backup() ; exit ; }
+    if( /^(final)$/ )
+    { &clean(); $latex_3_times = "true" ; }
+    elsif( /^(view)$/ ) 
+      { if( $confs{AUTO_SHOW_PDF} eq "true" )
+          { $confs{AUTO_SHOW_PDF} = "false" ; }
+          else{ $confs{AUTO_SHOW_PDF} = "true"; }
+      }
+    elsif( /^(-y|--with-synthesis)$/ ) 
+      { $synthesis = "true"; $latex_3_times = "true"; }
+    else { &usage() ; exit ; }
+
+    shift(@ARGV);
+  }
+}
+### Ends command line parser
+
+# Verify if every file needed is present
+&check_workdir( $workdir );
+
+my %strangeChars = ("\#"  => "\\#" , '[$]' => "\\\$", "\%" => "\\\%"  ,
+                    "\&"  => "\\&" , "\_"  => "\\\_" ,
+                    "{"   => "\\{" , "}"   => "\\}" ) ;
+
+my %reservedChars = ( ";lt;" => "<" , ';gt;' => ">" , ';amp;' => "\&" ) ;
+
+my %mathChars = ( ';bs;' => '$\backslash$' , '[|]' => "\$\\mid\$" ) ;            
+
+my %tags ;
+
+# verifies if all executables are present
+&verify_depends();
+
+{ # Read Default TAG file and user defined ones. 
+  my $tagFile = "/usr/share/apostilator/tags/core.xml.pt_BR" ;
+  &readTags( $tagFile , \%tags ) ;
+
+  $tagFile = "$workdir/.tags.xml" ;
+  &readTags( $tagFile , \%tags ) if -f $tagFile ;
+}
+
+&create_symlinks() ;
+
+&start( "true" ) ;
+
+exit ;
+
+###
+
+sub start()
+{
+    my ( $latex_3_times ) = @_ ;
+
+    $SIG{TERM} = \&forced_stop;
+    $SIG{INT} = \&forced_stop;
+
+    open LOG, ">$workdir/apostilator.log";
+    my $now = localtime time;
+    print LOG "\n### apostilator is running: $now\n\n";
+
+    $now = localtime time;
+    print LOG "\n### apostilator::create_symlinks(): $now\n\n";
+    &create_symlinks();
+
+    $now = localtime time;
+    print LOG "\n### apostilator::convert_apostila(): $now\n\n";
+    &convert_apostila();
+
+    $now = localtime time;
+    print LOG "\n### apostilator::convert_latex2pdf(): $now\n\n";
+    &convert_latex2pdf( '1' );
+
+    $now = localtime time;
+    print LOG "\n### apostilator::create_bibliography(): $now\n\n";
+    &create_bibliography();
+
+    if( $latex_3_times eq "true" )
+    {  &convert_latex2pdf( '2' );
+       &convert_latex2pdf( '3' );
+    }
+
+    if( -e "$tex_dir/base.pdf" ) {
+        use File::Copy ;
+        move( "$tex_dir/base.pdf" , "$workdir/archives.pdf" ) ;
+    }
+   
+    if( "$confs{AUTO_SHOW_PDF}" eq "true") { &show_pdf() ; }
+    close LOG;
+}
+###
+
+# convert_apostila: le os arquivos capitulos.txt e apendices.txt e
+sub convert_apostila() {
+
+   my $resFileXML = "$workdir/archives/Synthesis.xml" ;
+
+   open resFILEXML , ">$resFileXML" or die "Can't open file Synthesis.xml:  $!" ;
+     print resFILEXML "<capitulo>$synthesisTitle</capitulo>\n\n" ;
+   close resFILEXML ;
+
+   &convert_filelist("$workdir/capitulos.txt","$tex_dir/capitulos.tex","$resFileXML");
+   &convert_filelist("$workdir/apendices.txt","$tex_dir/apendices.tex","$resFileXML");
+    
+    if( $synthesis ne "false" )
+    {
+        print "Processind Synthesis\n";
+        &convert_file2latex( $resFileXML, "$tex_dir/Synthesis.tex", "/dev/null") ;
+        open TEX , ">>$tex_dir/capitulos.tex" or die "Can't open file capitulos.tex: $!" ;
+          print TEX "\\input{Synthesis}\n" ;
+        close TEX ;
+    }
+
+    unlink( "$resFileXML" );
+}
+###
+
+
+sub convert_filelist()
+{
+  my ( $inFileList , $outFileList , $resFileXML ) = @_ ;
+  my $number_of_files = 0 ;
+
+  open XML, "$inFileList" or die "Can't open file: $inFileList.\n";
+  open TEX, ">$outFileList" or die "Can't open file: $outFileList.\n";
+
+  while( <XML> )
+  {
+    next if( /^(\#|\n)/ ) ;
+    chomp;
+
+    my $file = $_ ;
+
+    if( /\.\w+$/ )
+    {
+        print "Please, use files without extensions in [$inFileList].\n" ;
+        print "Ignoring file ${_}" ;
+        next ;
+    }
+
+    
+    my $inFile = "$workdir/archives/$file.xml";
+    my $outFile = "$tex_dir/$file.tex";
+
+    &convert_file2latex( $inFile , $outFile , $resFileXML);
+    
+    print TEX "\\input{$file}\n" ;
+    $number_of_files++ ;
+  }
+
+  close XML;
+  close TEX;
+  
+  print "Skipping $inFileList, no files specified.\n" if $number_of_files == 0 ;
+}
+###
+
+sub convert_file2latex() 
+{
+    use Encode ;
+
+    my ( $inFile , $outFile, $resFile ) = @_ ;
+
+    my $comandoCTRL = 0 ;
+    my $tabelaCTRL = 0 ;
+    my $equacaoCTRL = 0 ;
+    my $resumeCTRL = 0 ;
+    my $line_count = 0 ; 
+
+    open inFILE , $inFile or die "Can not open file: $inFile.\n";
+    open resFILE , ">>$resFile" or die "Can not open file: $resFile.\n";
+    open outFILE , ">$outFile" or die "Can not open file: $outFile.\n";
+
+    print "Converting to Latex: $inFile.\n" ;
+    
+    select outFILE ;
+
+    foreach my $line ( <inFILE> )
+    {
+      $line_count++;
+      my @pilhaTags ;
+      my $pilhaCounter = 0 ;
+
+      my $enc_name = Encode::is_utf8($line)? 'utf8' : 'false' ;
+      
+      if( $enc_name eq 'false' )
+      { $line = encode( "utf8" , decode( "iso-8859-1" , $line ) ) ; }
+
+      # Ativa bibliografia quando encontrar a tag <citar>
+      if( $line =~ /<citar>/ )
+      { $bibliography = "true" ; }
+
+      # Tratamento da <sintese></sintese>
+      if( $line =~ /<sintese>/ ) 
+      {  if ($resumeCTRL == 1) 
+         { print STDOUT "Invalid XML: duplicate tag <sintese> in file $inFile:$line_count.\n";
+           exit;
+         }
+        
+         $resumeCTRL = 1 ;
+         $line =~ s/(<\w+>)/$tags{$1}/g ;
+         next ;
+      }
+
+      if( $line =~ /<\/sintese>/ )
+      {  if ($resumeCTRL == 0)
+         { print STDOUT "Invalid XML: duplicate tag </sintese> in file $inFile:$line_count.\n";
+           exit;
+         }
+        
+         $resumeCTRL = 0 ;
+         $line =~ s/(<\/\w+>)/$tags{$1}/g ;
+         next ;
+      }
+      
+      if( $resumeCTRL == 1 ) 
+      { print resFILE $line ; }
+
+      ### fim <sintese> ###
+
+	  # Tratamento do <comando></comando> e <comandoNumerado></comandoNumerado>
+      if( $line =~ /<comando>/ || $line =~ /<comandoNumerado>/ )
+      {  if ($comandoCTRL == 1) 
+         {  print STDOUT "Invalid XML: duplicated tag in file $inFile:$line_count.\n";
+            exit;
+         }
+         
+         $comandoCTRL = 1;
+         $line =~ s/(<\w+>)/$tags{$1}/g ;
+         print $line ;
+         next ;
+      }
+	  
+      if( $line =~ /<\/comando>/ || $line =~ /<\/comandoNumerado>/ )
+      {  if ($comandoCTRL == 0) 
+         {  print STDOUT "Invalid XML: duplicated tag in file $inFile:$line_count.\n" ;
+            exit ;
+         }
+         
+         $comandoCTRL = 0;
+         $line =~ s/(<\/\w+>)/$tags{$1}/g ;
+         print $line ;
+         next ;
+      }
+
+      if( $comandoCTRL == 1 ) 
+      {  foreach( keys %reservedChars ) 
+         {  if( $line =~ /$_/ )
+            { $line =~ s/$_/$reservedChars{$_}/g } 
+         }
+         
+         print $line ; 
+         next ;
+      }
+      ### fim <comando> e <comandoNumerado> ###
+
+      # Tratamento do <tabela></tabela>
+      if( $line =~ /<tabela>/ )
+      {  if( $tabelaCTRL == 1 )
+         {  print STDOUT "Invalid XML: duplicated tag <tabela> in file $inFile:$line_count.\n";
+            exit;
+         }
+         
+         $tabelaCTRL = 1 ;
+         $line =~ s/(<\w+>)/$tags{$1}/g ;
+         print $line ;
+         next ;
+      }
+
+      if( $line =~ /<\/tabela>/ ) 
+      {  if ($tabelaCTRL == 0) 
+         {  print STDOUT "Invalid XML: duplicated tag </tabela> in file $inFile:$line_count.\n";
+            exit;
+         }
+         
+         $tabelaCTRL = 0 ;
+         $line =~ s/(<\/\w+>)/$tags{$1}/g ;
+         print $line ;
+         next ;
+      }
+	  
+	  if( $tabelaCTRL == 1) 
+      {  if( $line =~ /<legenda>/ ) 
+         {  print "\\end{tabular}\n";
+            $line =~ s/(<\w+>)/$tags{$1}/g ;
+            $line =~ s/(<\/\w+>)/$tags{$1}/g ;
+            print $line ;
+            next ;
+         }
+      }
+      ### fim <tabela> ###
+
+      # Substituicao da tag <arquivo> deve ser tratada como caso especial
+      # para que o apostilator nao substitua caracteres estranhos a ele no
+      # nome de arquivos das figuras
+      if( $line =~ /<arquivo>/ )
+      {  $line =~ s/(<\/?\w+>)/$tags{$1}/g ;
+         print $line ;
+         next ;
+      }
+      ### fim <arquivo> ###
+
+      # Ambiente matematico tambem tem que ser tratado como caso especial
+      # para que os caracteres especias nao sejam alterados
+      if( $line =~ /<math>/ )
+      {  $line =~ s/(<\/?\w+>)/$tags{$1}/g ;
+         print $line ;
+         next ;
+      }
+      ### fim <math> ###
+
+      # Ambiente equation tambem tem que ser tratado como caso especial
+      # para que os caracteres especias nao sejam alterados
+      if( $line =~ /<equacao>/ )
+      {  if( $equacaoCTRL == 1 )
+         {  print STDOUT "Invalid XML: duplicated tag <equacao> in file $inFile:$line_count.\n";
+            exit;
+         }
+         
+         $equacaoCTRL = 1 ;
+         $line =~ s/(<\w+>)/$tags{$1}/g ;
+         print $line ;
+         next ;
+      }
+
+      if( $line =~ /<\/equacao>/ ) 
+      {  if ($equacaoCTRL == 0) 
+         {  print STDOUT "Invalid XML: duplicated tag </equacao> in file $inFile:$line_count.\n";
+            exit;
+         }
+         
+         $equacaoCTRL = 0 ;
+         $line =~ s/(<\/\w+>)/$tags{$1}/g ;
+         print $line ;
+         next ;
+      }
+
+      if( $equacaoCTRL == 1 )	
+      {  if( $line =~ /<\/?nome>/ ) 
+         {  $line =~ s/(<\/?\w+>)/$tags{$1}/g ;
+            print $line ;
+            next ;
+         }
+         else 
+         {
+            print $line ;
+            next ;
+         }
+      }
+      ### fim <equacao> ###
+
+      foreach( keys %strangeChars ) 
+      {  $line =~ s/$_/$strangeChars{$_}/g ; }
+
+      $line =~ s/\~/\\\~{}/g ;
+      $line =~ s/\^/\\\^{}/g ;
+      $line =~ s/(<\/?\w+\/?>)/$tags{$1}/g ;	
+      $line =~ s/</\$<\$/g ;
+      $line =~ s/>/\$>\$/g ;
+
+      foreach( keys %mathChars ) 
+      {  if( $line =~ /$_/ ) 
+         {  $line =~ s/$_/$mathChars{$_}/g ; }
+      }
+
+	  print $line ;
+    }
+	
+    select STDOUT ;
+
+    close inFILE ;
+    close outFILE ;
+    close resFILE ;
+}
+###
+
+sub convert_latex2pdf() 
+{
+    if ("@_" == '1') 
+    { print "Processing chapters." ; } 
+    elsif ("@_" == '2')
+    { print "Processing bibliography." ; } 
+    elsif ("@_" == '3') 
+    { print "Processing indexes." ; }
+
+    chdir "$tex_dir";
+    system( "pdflatex base.tex >> $workdir/apostilator.log 2>&1 &" );
+    
+    my $count = 0 ;
+    while( system( "pgrep pdflatex > /dev/null" ) == 0 )
+    {
+      if( $count > 30 )
+      {
+        print "\nWait for 30 seconds, aborting...";
+        forced_stop();
+      }
+      sleep( 1 ) ;
+      print ".";
+      $count++ ;
+    }
+
+    print "\n";
+
+    if( system("tail -n5 $workdir/apostilator.log | grep -q 'PDF file is not finished'" ) == 0 ) 
+    {
+        print "apostilator: XML sintax error, more information on apostilator.log.\n";
+        exit;
+    }
+}
+###
+
+sub show_pdf() 
+{
+  my @programs = ("$confs{PDF_VIEWER}","xpdf","evince","kpdf","acroread");
+  foreach( @programs )
+  {
+    if( system( "which $_ 2>&1 >/dev/null" ) == 0 )
+    {
+      system("$_ \'$workdir/archives.pdf\' 2> /dev/null &" ) ;
+      return ;
+    }
+  }
+}
+###
+
+sub create_symlinks()
+{
+  my $sym_link = "$workdir/.tex/imgs" ;
+  if( ! -l $sym_link )
+  { symlink( "$workdir/archives/imgs" , "$workdir/.tex/imgs") ; }
+
+  $sym_link = "$workdir/.tex/apostilator_user_defined_macros.tex" ;
+  if( ! -l $sym_link )
+  { symlink( "$workdir/.macros.tex" , $sym_link ) ; }
+    
+=pod
+    unless (-e "$workdir/archives/bibliografia.bib") {
+      open BIBLIOGRAPHY, ">$workdir/archives/bibliografia.bib" or die "Error open file: bibliografia.bib.\n";
+      print BIBLIOGRAPHY "\n";
+      close BIBLIOGRAPHY;
+    }
+    unlink("$tex_dir/bibliografia.bib");
+    symlink("../archives/bibliografia.bib" ,"tex/bibliografia.bib");
+=cut
+}
+###
+sub create_bibliography()
+{
+    if( $bibliography eq "false" )
+    {  print "Skipping Bibliografy, it was not cited on chapters.\n";
+       return;
+    }
+
+    open BIBLIOGRAPHY, "$workdir/archives/bibliografia.xml" ;
+    open BIB_TEX , ">$workdir/.tex/bibliografia.bib" ;
+ 
+    my %bib_tags = ( "titulo" => "title" , "autor" => "author" ,
+                     "editor" => "journal" , "volume" => "volume" ,
+                     "pagina" => "page" , "ano" => "year" );
+   
+    my $i = 0;
+
+    while( <BIBLIOGRAPHY> )
+    {  $i++;
+       next if /^\n/ ;
+       chomp ;
+       my $line = $_ ;
+       
+       if( $line =~ /<referencia>/ ) 
+         {  print BIB_TEX "\@Article{"; next ; }
+
+       if( $line =~ /<\/referencia>/ )
+         { print BIB_TEX "}" ; next ; }
+ 
+       if( $line =~ /<nome>/ )
+         { $line =~ s/(.+)?<nome>(\w+)<\/nome>/$2,/ ;
+           print BIB_TEX "$line\n" ; next ; }
+
+        foreach( keys %bib_tags )
+        {
+          if( $line =~ /<$_>/ )
+          { $line =~ s/(\W*)?<\/?$_>//g ;
+            print BIB_TEX "\t$bib_tags{$_} = \"$line\",\n" ;
+            last ;
+          }
+        }
+    }
+    close BIBLIOGRAPHY ;
+    close BIB_TEX ;
+    
+    print "Converting to bibtex: $workdir/archives/bibliografia.xml.\n";
+    chdir "$tex_dir";
+    system("bibtex base >> $workdir/apostilator.log 2>&1");
+}
+###
+
+sub backup() {
+    if (-e "$workdir/.backup") {
+        system("rm -rf $workdir/.backup");
+    }
+    mkdir("$workdir/.backup");
+    mkdir("$workdir/.backup/tex");
+    system("cp -a $workdir/archives $workdir/apostilator.pl $workdir/README $workdir/ChangeLog $workdir/man $workdir/.backup/ >> $workdir/apostilator.log 2>&1");
+    system("cp -a $tex_dir/base.tex $tex_dir/titlepage.tex $tex_dir/extras $tex_dir/figs $workdir/.backup/tex/ >> $workdir/apostilator.log 2>&1");
+    use POSIX qw(strftime);
+    my $now = strftime "%Y%m%d", localtime;
+    $_ = "$workdir";
+    my $file;
+    if ( /.*\/(.+$)/ ) { $file = "$now-$1.tar.gz" }
+    my $j;
+    for (my $i=$confs{BACKUP_ROTATE}-1;$i>=0;$i--) {
+        if ($i == 0) {
+            $j = "";
+        } else {
+            $j = $i-1;
+            $j = ".$j";
+        }
+        if (-e "$workdir/$file$j") { system("mv $workdir/$file$j $workdir/$file.$i") }
+    }
+    chdir("$workdir/.backup") or die "Unable to access the backup directory in [$workdir/.backup]\n";
+    system("tar czf ../$file ./");
+    system("rm -rf $workdir/.backup");
+    print "Backup $file created, on restore main folder will not be created.\n";
+}
+###
+
+sub version() {
+    print "apostilator $confs{VERSION}.\n\n" ;
+    print "This is free software.\n" ;
+    print "GNU General Public License <http://www.gnu.org/licenses/gpl.html>.\n" ;
+    print "There is NO WARRANTY, to the extent permitted by law.\n" ;
+    print "Written by Luiz C. B. Mostaco Guidolin and Reinaldo Carvalho.\n" ;
+    print "Visit: <http://www.apostilator.org> for updates.\n" ;
+}
+###
+

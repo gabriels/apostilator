@@ -1,0 +1,35 @@
+
+
+" Faz com que crtl+b+b insira as tags para Negrito
+map! b <b></b><ESC>2ba
+map b i<b></b><ESC>2ba
+" Faz com que crtl+b+b insira as tags para Italico
+map! i <i></i><ESC>2ba
+map i i<i></i><ESC>2ba
+" Faz com que o ctrl+b+i insira as tags para lista
+map! l <lista><CR><TAB><item></item><CR></lista><ESC>:s/^    //<CR>3b/shisv<CR>a
+map l i<lista><CR><TAB><item></item><CR></lista><ESC>:s/^    //<CR>3b/shisv<CR>a
+" Faz com que o ctrl+b+i insira as tags para enumerar
+map! e <enumerar><CR><TAB><item></item><CR></enumerar><ESC>:s/^    //<CR>3b/shisv<CR>a
+map e i<enumerar><CR><TAB><item></item><CR></enumerar><ESC>:s/^    //<CR>3b/shisv<CR>a
+" Faz com que o ctrl+b+i insira as tags para item
+map! it <item></item><ESC>2ba
+map it i<item></item><ESC>2ba
+" Faz com que o ctrl+b+i insira as tags para step
+map! st <step></step><ESC>2ba
+map st i<step></step><ESC>2ba
+" Faz com que o ctrl+b+c insira as tags para capitulo
+map! s <capitulo></capitulo><ESC>2ba
+map s i<capitulo></capitulo><ESC>2ba
+" Faz com que o ctrl+b+s insira as tags para subsecao
+map! ss <subsecao></subsecao><ESC>2ba
+map ss i<subsecao></subsecao><ESC>2ba
+" Faz com que o ctrl+b+s insira as tags para subsubsecao
+map! sss <subsubsecao></subsubsecao><ESC>2ba
+map sss i<subsubsecao></subsubsecao><ESC>2ba
+" Faz com que o ctrl+b+s insira as tags para comando
+map! c <comando><CR># <CR></comando><ESC>ka
+map c i<comando><CR># <CR></comando><ESC>ka
+" Faz com que o ctrl+b+s insira as tags para comandoNumerado
+map! cn <comandoNumerado><CR>$ <CR></comandoNumerado><ESC>ka
+map cn i<comandoNumerado><CR>$ <CR></comandoNumerado><ESC>ka

@@ -1,0 +1,81 @@
+<capitulo>Relação de Tags</capitulo>
+
+<subsecao>Capítulos e subseções</subsecao>
+
+<comando>
+<capitulo></capitulo>
+<nome></nome>
+    <subsecao></subsecao>
+    <nome></nome>
+        <subsubsecao></subsubsecao>
+        <nome></nome>
+</comando>
+
+<subsecao>Comandos e linhas de código</subsecao>
+
+<comando>
+<\comando><\/comando>
+</comando>
+
+<subsecao>Negrito e itálico</subsecao>
+
+<comando>
+<b></b>
+<i></i>
+</comando>
+
+<subsecao>Listas</subsecao>
+
+<comando>
+<lista>
+    <item></item>
+</lista>
+<enumerar>
+    <item></item>
+</enumerar>
+</comando>
+
+<subsecao>Nomes e referências</subsecao>
+
+<comando>
+<nome></nome>
+<ref></ref>
+</comando>
+
+<subsecao>Tabelas</subsecao>
+
+<comando>
+<tabela>{|l|c|r|}
+    <lh><th></th> <col> <th></th> <col> <th></th></lh>
+    <tr> <col> <col> </tr>
+    <nome></nome>
+</tabela>
+</comando>
+
+<subsecao>Figuras</subsecao>
+
+<comando>
+<figura>
+    <tamanho></tamanho>
+    <arquivo></arquivo>
+    <legenda></legenda>
+    <nome></nome>
+</figura>
+</comando>
+
+<subsecao>Ambiente Matemático</subsecao>
+
+<comando>
+<math></math>
+
+<equacao>
+    <nome></nome>
+</equacao>
+</comando>
+
+<subsecao>Quebras de Página</subsecao>
+
+<comando>
+<quebraPagina>
+</comando>
+

@@ -1,0 +1,28 @@
+<capitulo>Exemplo de capítulo</capitulo>
+
+	Introdução ao capítulo de exemplo.
+	Exemplo de bibliografia: <citar>Test1</citar>
+
+<subsecao>Exemplo de seção</subsecao>
+
+	Introdução a seção de exemplo.
+	Exemplo de bibliografia: <citar>Test2</citar>
+
+<subsubsecao>Exemplo de subseção</subsubsecao>
+
+	Introdução a subseção de exemplo.
+
+<subsubsecao>Exemplo de subseção</subsubsecao>
+
+	Introdução a subseção de exemplo.
+
+<subsecao>Exemplo de segunda seção</subsecao>
+
+	Introdução a segunda seção de exemplo.
+
+	Exemplo de comando:
+
+<comando>
+# echo xxxx > /dev/null
+</comando>
+

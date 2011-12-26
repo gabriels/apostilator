@@ -1,0 +1,16 @@
+<capitulo>Capítulos: Chapters.lst</capitulo>
+
+    Ao redigir um texto muito grande é interessante dividí-lo em arquivos menores, facilitando a manipulação e tornando o processo mais eficiente.
+
+    Recomanda-se que seja criado um arquivo por capítulo, ao qual deve ser inserido no arquivo 'Chapters.lst' que contém a lista ordenada dos capítulo do projeto.
+
+<subsecao>Sintaxe do 'Chapters.lst'</subsecao>
+
+    A sintaxe do arquivo <b>Chapters.lst</b>:
+
+<lista>
+  <item>Comentários:</item> o caracter '#' faz com que a linha por ele iniciada seja considerada como comentário;
+  <item>Um arquivo por linha:</item> cada linha do arquivo corresponde a apenas um arquivo;
+  <item>Sem extensão .xml:</item> apenas o nome do arquivo, sem extensão;
+  <item>Ordenados:</item> a ordem na qual os arquivos são inseridos será a mesma ordem que o processador texto irá inseri-los no documento.
+</lista>

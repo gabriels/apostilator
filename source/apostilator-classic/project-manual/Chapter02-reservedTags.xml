@@ -1,0 +1,23 @@
+<capitulo>Caracteres Reservados</capitulo>
+<nome>chap02</nome>
+
+Ao elaborar um manual relacionado à linguagem HTML por exemplo, é possível que
+seja necessário utilizar alguma <i>tag</i> reservada do apostilator o que
+causaria um efeito indesejado. Para contornar essa dificuldade foram
+adicionados alguns 'marcadores' reservados para a elaboração de <i>tags</i>.
+São elas:
+
+<tabela>{|c|c|}
+    <lh> <th>Caracteres</th> <col> <th>Marcadores</th> </lh>
+    <tr> < <col> ;lt; </tr>
+    <tr> > <col> ;gt; </tr>
+    <tr> & <col> ;amp; </tr>
+    <legenda>Caracteres especiais</legenda>
+    <nome>tab:specialChars</nome>
+</tabela>
+
+<comando>
+Veja só como fica fácil falar da tag ;lt;tr;gt;, usando os 
+marcadores especiais! O problema é que até o momento só 
+funciona dentro de uma ambiente de ;lt;comando;gt;.
+</comando>

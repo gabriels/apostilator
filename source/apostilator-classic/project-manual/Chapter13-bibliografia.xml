@@ -1,0 +1,35 @@
+<capitulo>Adicionando Bibliografia</capitulo>
+
+Para adicionar uma referência bibliográfica em seu texto, você deve adicionar
+uma entrada para ela no arquivo <b>Apostila/bibliografia.bib</b>. Cada entrada
+de bibliografia deve seguir o formato <b>exato</b> mostrado abaixo:
+
+<comando>
+@Article{tcpipIBM,
+    title   =   "Configuring {TCP}/{IP} under Linux" ,
+    author  =   "Tom Syroid" ,
+    journal =   "{IBM} developerWorks" ,
+    note    =   "http://www.ibm.com/developerWorks" ,
+    year    =   2001
+}
+
+@Misc{cansian,
+    title   =   "Tutorial Iptables - firewalls" ,
+    author  =   "Adriano Cansian et al" ,
+    year    =   2003 
+}
+</comando>
+
+Neste exemplo há duas entradas bibliográficas que podem ser referenciadas no
+meio do texto por seus "apelidos", ou seja, <b>tcpipIBM</b> e <b>cansian</b>,
+utilizando a tag "citar" como mostrado no exemplo a seguir:
+
+<comando>
+ Este aqui é um treco de um texto contendo uma referência
+ bibliográfica ;lt;citar;gt;tcpipIBM;lt;/citar;gt;.
+</comando>
+
+Ainda quanto as definições de referências bibliográficas, veja que na primeira,
+<b>tcpipIBM</b> há os campos <b>note</b> e <b>journal</b> que não estão
+presentes na segunda referência <b>cansian</b>. Sendo assim, quando você não
+utilizar todos os campos, basta removê-los e tomar cuidado com as vírgulas!

@@ -1,0 +1,33 @@
+<capitulo>Inserir Comandos / Linhas de Código</capitulo>
+<nome>xxx</nome>
+
+Para inserir linhas de código, comandos ou arquivos de configuração, é necessário utilizar o par de <i>tags</i> como no exemplo a seguir:
+
+<comando>
+    ;lt;comando;gt;
+           Qualquer tag inserida dentro das tags: ;lt;comando;gt;;lt;/comando;gt;
+       não serão interpretadas pelo processador de texto. Assim como não há quebra-linha
+       automática (como nesta linha).
+           Dessa forma, se você adicionar 5 espaços como no exemplo abaixo,
+      eles serão impressos:
+           Dentro do parênteses há 5 (     ) espaços! :o)
+    ;lt;/comando;gt;
+</comando>
+
+    Repare que o texto acima foi colocado dentro de um ambiente para comandos. Note que todos os espaços em branco foram impressos exatamente da forma que eu os adicionei! Além disso a fonte dentro de um ambiente comando é alterada para destacar-se do texto comum. Dentro desse ambiente pode ser inserido qualquer coisa, inclusive tags.
+
+ Existe também a tag <b>comandoNumerado</b> que adiciona o número da linha
+ dentro de um ambiente de comandos. Veja o exemplo:
+
+<comandoNumerado>
+Para utilizar essa tag, basta fazer o seguinte:
+
+;lt;comandoNumerado;gt;
+Comandos....
+Mais comandos...
+
+muitos comandos....
+
+Chega de comandos!!!
+;lt;/comandoNumerado;gt;
+</comandoNumerado>

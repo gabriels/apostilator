@@ -1,0 +1,26 @@
+<capitulo>Exemplo de capítulo 2 </capitulo>
+
+	Introdução ao capítulo 2 de exemplo.
+
+<subsecao>Exemplo de seção do capítulo 2 </subsecao>
+
+	Introdução a seção de exemplo.
+
+<subsubsecao>Exemplo de subseção do capítulo 2</subsubsecao>
+
+	Introdução a subseção de exemplo.
+
+<subsubsecao>Exemplo de subseção do capítulo 2</subsubsecao>
+
+	Introdução a subseção de exemplo.
+
+<subsecao>Exemplo de segunda seção do capítulo 2</subsecao>
+
+	Introdução a segunda seção de exemplo.
+
+	Exemplo de comando:
+
+<comando>
+# echo xxxx > /dev/null
+</comando>
+

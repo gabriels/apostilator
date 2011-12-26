@@ -1,0 +1,81 @@
+20100617:
+- Remoção do diretório .tex/titlepage-imgs, nomeando a figura da capa para titlepage.png.
+- Atualização do README, atualização dos nomes dos pacotes.
+
+20090223:
+- Nova organização dos arquivos de projeto.
+- Adicionada logo do Apostilator.
+  * Reinaldo de Carvalho <reinaldoc@gmail.com> 
+
+20070824:
+- Efetuadas correções das frases em Inglês.
+- Informações adicionadas relativas ao Gentoo no README.
+- Retirei (comentei) a verificação de existência dos binátios: latex-ucs-discovermacro, latex-ucs-latexout não utilizados e inexistentes no Gentoo.
+  * Luiz C. B. Mostaço Guidolin <lcguid@gmail.com>
+
+20070823:
+- Adicionada opção --skip-summary para não gerar capítulo de resumo.
+- Corrigido backup para nomes do diretório com espaço e hífen.
+  * Reinaldo de Carvalho <reinaldoc@gmail.com> 
+
+20070821:
+- Adicionada verficação se PDF foi gerado com sucesso.
+- Correção de falha na detecção do workdir.
+- Melhoria na rotina de backup.
+- README revisado e ampliado.
+  * Reinaldo de Carvalho <reinaldoc@gmail.com> 
+
+20070819
+- Todo código foi revisado e re-escrito.
+- Capítulo com referências bibliográficas não é inserido caso não haja
+  bibliografias.
+- MakeFile foi removido.
+- Novas opções:
+     -a=,    --set-author=          Set project Author. Use slash before spaces.
+     -t=,    --set-title=           Set project title.  Use slash before spaces.
+     -w=,    --workdir=             Set workdir instead PWD.
+     -n ,    --no-open-pdf          Do not exec PDF viewer.
+     -b ,    --backup               Build a tar.gz with necessary files.
+     -c ,    --clean                Clean temporary files.
+     -l ,    --all-latex-stages     Make all LaTeX stages.
+     -o ,    --only-chapters        Default action.
+     -s ,    --skip-pdf             Do anything, but dont build PDF.
+     -h ,    --help                 Show this help.
+     -v ,    --version              Print program version.
+- Adicionado parser para algumas tags XML.
+- Outras coisas que não lembro.. :)
+  * Reinaldo de Carvalho <reinaldoc@gmail.com> 
+
+20070818:
+- Adicionado tag <resumo></resumo> para criação automática do capítulo
+  "O pulo do Gato".
+- Corrigida criação dos links tex/imgs => ../Apostila/imgs e
+  tex/bibliografia.bib => ../Apostila/bibliografia.bib.
+- Adicionado parser de verificação de sintaxe da bibliografia.
+  * Reinaldo de Carvalho <reinaldoc@gmail.com> 
+
+20070802:
+- Suporte a XML self-closed tags: <item/> <col/> <quebraPagina/> <linha/>,
+  muitos editores de XML não exibem corretamente tags que não possuem
+  delimitador do final.
+  * Reinaldo de Carvalho <reinaldoc@gmail.com>
+
+20070511:
+- melhorias no README referente ao BugReport enviado por Cesar Domingos 
+  e Tiago Japa;
+- incluido controle de versão no apostilator, vide arquivo version_xxx;
+- implementado um target do make, chamado backup que realiza backup do
+  trabalho;
+
+20070509:
+- manual atualizado para incluir bibliografia e tags: lpi e rh;
+- adicionado suporte as tags lpi e rh
+
+20070423:
+- Adicionado suporte a bibliografia: arquivo Apostila/bibliografia.bib;
+- Adicionado suporte a caracteres "estranhos" como <, > e &;
+- Adicionado um arquivo .vimrc com teclas de atalho para o apostilator;
+- Manual do apostilator atualizado;
+- tag comandoNumerado adicionada ;
+- Software registrado sob GPL - Guidolin Public License...ooops digo GNU 
+  Public License;
