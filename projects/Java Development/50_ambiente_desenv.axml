@@ -1,14 +1,14 @@
 <capitulo>Ambiente de Desenvolvimento J2EE</capitulo>
 
 	O ambiente de desenvolvimento é formado por um conjunto de programas
-disponíveis através de licenças livres, que permitem o desenvolvimento de
-sistemas através de tecnologias J2EE e ferramentas que aumentam a
+disponíveis através de licenças livres, que permitem a codificação de
+sistemas utilizando tecnologias J2EE e de ferramentas que aumentam a
 produtividade.
 
 <lista>
 	<item/> Eclipse Indigo SR1 v3.7.1;
 	<item/> Maven Intergration for Web Tools Platform;
-	<item/> JbossTools v3.3.0-M4;
+	<item/> JbossTools v3.3.0-M5;
 	<item/> Jboss AS v6.1.0 Final;
 	<item/> Demoiselle 2.2.0 (Maven archetypes; JARs;);
 </lista>
@@ -49,7 +49,9 @@ $ chown -R johndoe: eclipse
 
 	Substitua o termo <i>johndoe</i> pelo usuário que executará o eclipse.
 Isto é necessário neste momento para que o Eclipse tenham permissão para
-instalar os programas adicionais no diretório <i>/opt/eclipse</i>.
+instalar os programas adicionais no diretório <i>/opt/eclipse</i>, ao invés
+de instalados em <i>~/.eclipse</i>. Posteriormente pode-se alterar a
+permissão deste diretório.
 
 <subsubsecao>Pós-instalação</subsubsecao>
 
@@ -57,10 +59,12 @@ instalar os programas adicionais no diretório <i>/opt/eclipse</i>.
 melhora no desempenho do Eclipse, é indicado a seguir:
 
 <lista>
-<item/> <b>/opt/eclipse/eclipse.ini</b>: incremente os parâmetros indicados.
+<item/> <b>/opt/eclipse/eclipse.ini</b>: incremente os parâmetros como indicado
+a seguir.
 </lista>
 
 <comando>
+-XX:MaxPermSize=512m
 -Xms512m
 -Xmx1024m
 </comando>
@@ -76,6 +80,26 @@ programas, para isto inicialize o <i>eclipse</i> através do executável
     <arquivob>imgs/eclipse_config_workspace_01</arquivob>
     <legenda>Definindo workspace: <b>/opt/eclipse/workset/workspace</b></legenda>
     <nome>fig:eclipse-config-workspace-1</nome>
+</figura>
+
+	A configuração de proxy poderá ser realizada como demonstrado a seguir:
+
+<lista>
+<item/> acesse o menu: <b>Window</b> => <b>Preferences</b> => <b>General</b> =>
+ <b>Network Connections</b>;
+<item/> selecione em <i>Active Provder</i> a opção <b>Manual</b>;
+<item/> para cada schema (<i>HTTP, HTTPS, SOCKS</i>), selecione-o e clique
+em <b>Edit</b>;
+<item/> preencha adequadamente IP/host do serviço de proxy e clique em
+<b>OK</b>;
+<item/>Clique em <b>OK</b> novamente para concluir a configuração;
+</lista>
+
+<figura>
+    <tamanhob>0.9</tamanhob>
+    <arquivob>imgs/eclipse_config_proxy_01</arquivob>
+    <legenda>Configurando Proxy</legenda>
+    <nome>fig:eclipse-config-proxy-1</nome>
 </figura>
 
 <quebraPagina/>
@@ -113,6 +137,8 @@ programas, para isto inicialize o <i>eclipse</i> através do executável
 <item/> clique em <b>Finish</b>;
 <item/> Aguarde o download, o acesso pode ser lento e este processo pode
 demorar;
+<item/> Após a conclusão da instalação, será solicitado para
+reiniciar o Eclipse;
 </lista>
 
 <figura>
@@ -134,6 +160,7 @@ com este usuário, ou seja, não use o <i>root</i>.
 
 <comando>
 $ mkdir -p /opt/eclipse/workset/maven/repository
+$ ln -s /opt/eclipse/workset/maven/repository ~/.m2
 </comando>
 
 <lista>
@@ -182,6 +209,8 @@ Settings</b>
 <item/> configure a opção <i>User Settings</i> para:
 <b>/opt/eclipse/workset/maven/settings.xml</b>.
 <item/> clique em <b>Apply</b>;
+<item/> o Eclipse deve ser reiniciado (ignore o download do índice exibido
+na view 'Progress');
 </lista>
 
 <figura>
@@ -394,7 +423,7 @@ e deverá ser refeita no caso de uso de outro workspace.
     <tamanhob>0.9</tamanhob>
     <arquivob>imgs/maven_demoiselle_02</arquivob>
     <legenda>Novo projeto Maven</legenda>
-    <nome>fig:maven-demoiselle-1</nome>
+    <nome>fig:maven-demoiselle-2</nome>
 </figura>
 
 <subsubsecao>Publicando a aplicação</subsubsecao>
@@ -403,7 +432,7 @@ e deverá ser refeita no caso de uso de outro workspace.
     <tamanhob>0.9</tamanhob>
     <arquivob>imgs/maven_demoiselle_03</arquivob>
     <legenda>Novo projeto Maven</legenda>
-    <nome>fig:maven-demoiselle-1</nome>
+    <nome>fig:maven-demoiselle-3</nome>
 </figura>
 
 <subsubsecao>Acessando a aplicação</subsubsecao>
@@ -412,5 +441,5 @@ e deverá ser refeita no caso de uso de outro workspace.
     <tamanhob>0.8</tamanhob>
     <arquivob>imgs/maven_demoiselle_04</arquivob>
     <legenda>Novo projeto Maven</legenda>
-    <nome>fig:maven-demoiselle-1</nome>
+    <nome>fig:maven-demoiselle-4</nome>
 </figura>
