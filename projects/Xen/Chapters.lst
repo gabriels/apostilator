@@ -1,6 +1,6 @@
-10_intro_virt
-15_intro_xen
-20_xen
-35_guest_installer
-40_controlando_hypervisor
-80_exemplo
+10_intro_virt.axml
+15_intro_xen.axml
+20_xen.axml
+35_guest_installer.axml
+40_controlando_hypervisor.axml
+80_exemplo.axml
