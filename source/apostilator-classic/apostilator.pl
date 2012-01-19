@@ -1,7 +1,7 @@
 #!/usr/bin/perl -w
 #
-# apostilator.pl v0.2.8-20111225
-# Copyright (c) 2007-2011 Reinaldo de Carvalho <reinaldoc@gmail.com>
+# apostilator.pl v0.2.9-20120119
+# Copyright (c) 2007-2012 Reinaldo de Carvalho <reinaldoc@gmail.com>
 # Copyright (c) 2005-2006 Luiz C. B. Mostaço Guidolin <lcguid@gmail.com>
 #
 # This program is free software; you can redistribute it and/or modify
@@ -22,7 +22,7 @@
 
 use strict ;
 
-my $version = "v0.2.8-20111225";
+my $version = "v0.2.9-20120119";
 my $pdf_view = "xpdf";
 my $pdf_exec = "on";
 my $pdf_make = "on";
