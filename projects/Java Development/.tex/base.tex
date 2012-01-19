@@ -1,5 +1,15 @@
 % $Header: /srv/cvs/repos/cursos/apostilator/tex/base.tex,v 1.1.1.1 2006/10/13 20:41:00 lcguid Exp $
 
+\pdfinfo{
+   /Author (Reinaldo Gil Lima de Carvalho)
+   /Mail (reinaldoc@gmail.com)
+   /Title  (Tecnologias de Desenvolvimento J2EE)
+   /CreationDate (D:20120119170432)
+   /Subject (Tecnologias J2EE)
+   /Keywords (Java; J2EE; Eclipse; JBoss; GlassFish; Application Server)
+
+}
+
 \documentclass[12pt,a4paper,heading]{report}
 
 \usepackage[brazil]{babel}
@@ -14,6 +24,22 @@
 \usepackage[a4paper,body={21.0cm,29.7cm},left=2.0cm,right=1.0cm,top=2.0cm,bottom=2.0cm]{geometry}
 \usepackage{soul}
 \usepackage{wrapfig}
+\usepackage{hyperref}
+
+\definecolor{darkblue}{rgb}{0.3,0.3,0.3}
+\hypersetup{
+	plainpages=true,
+	bookmarksopen=true,
+	bookmarksopenlevel=1,
+	pdfstartview=FitV,
+	bookmarksnumbered=true,
+	linktocpage=true,
+	colorlinks=true,
+	urlcolor=darkblue,
+	linkcolor=darkblue,
+	filecolor=darkblue,
+	citecolor=darkblue
+}
 
 \pdfpagewidth=\paperwidth
 \pdfpageheight=\paperheight
