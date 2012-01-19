@@ -1,7 +1,7 @@
-10_intro_software
-30_ldap
-40_openldap-intro
-50_openldap
-60_interfaces-ldap
-65_ldap-pam
-70_ldap-dhcp
+10_intro_software.axml
+30_ldap.axml
+40_openldap-intro.axml
+50_openldap.axml
+60_interfaces-ldap.axml
+65_ldap-pam.axml
+70_ldap-dhcp.axml
