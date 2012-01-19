@@ -161,8 +161,17 @@ sub main() {
           if( /^(-t=|--set-title=)(.+)$/ ) {
               &set_title("$2");
           }
-          if( /^(-u=|--set-customer=)(.+)$/ ) {
-              &set_customer("$2");
+          if( /^(-d=|--set-date=)(.+)$/ ) {
+              &set_date("$2");
+          }
+          if( /^(-f=|--set-footer=)(.+)$/ ) {
+              &set_footer("$2");
+          }
+          if( /^(-j=|--set-header=)(.+)$/ ) {
+              &set_header("$2");
+          }
+          if( /^(-x=|--set-chapter-footer=)(.+)$/ ) {
+              &set_chapter_footer("$2");
           }
           if( /^(-c|--clean)$/ ) {
               print "Clean temporary files.\n";
@@ -200,13 +209,17 @@ sub main() {
 sub usage() {
     print "Usage: apostilator.pl [ --workdir= ] [ OPTION ]... [ ACTION ] \n";
     print "Options available:\n";
-    print "    -a=,    --set-author=          Set project Author. Use slash before spaces.\n";
-    print "    -t=,    --set-title=           Set project title.  Use slash before spaces.\n";
-    print "    -u=,    --set-customer=        Set project customer.  Use slash before spaces.\n";
+    print "    -a=,    --set-author=          Set project Author*.\n";
+    print "    -t=,    --set-title=           Set project title*.\n";
+    print "    -d=,    --set-date=            Set project date*.\n";
+    print "    -j=,    --set-header=          Set page header*.\n";
+    print "    -f=,    --set-footer=          Set page footer*.\n";
+    print "    -x=,    --set-chapter-footer=  Set chapter page footer*.\n";
     print "    -w=,    --workdir=             Set workdir instead PWD.\n";
     print "    -l ,    --make-lst             Make chapters/appendix list sorted by name.\n";
     print "    -n ,    --no-open-pdf          Do not exec PDF viewer.\n";
-    print "    -y ,    --with-summary         Add chapter with summary.\n\n";
+    print "    -y ,    --with-summary         Add chapter with summary.\n";
+    print "                                   * Use quotation marks for spaces.\n";
     print "Actions available:\n";
     print "    -b ,    --backup               Build a tar.gz with necessary files.\n";
     print "    -c ,    --clean                Clean temporary files.\n";
@@ -258,10 +271,10 @@ sub backup() {
     &clean();
     my $project = &project_name();
     if (-e "$workdir/.$project") {
-        system("rm -rf $workdir/.$project");
+        system("rm -rf \"$workdir/.$project\"");
     }
     mkdir("$workdir/.$project");
-    system("cp -a $workdir/* $workdir/.tex $workdir/.$project/ >> $workdir/.apostilator.log 2>&1");
+    system("cp -a \'$workdir/\'* \'$workdir/.tex\' \'$workdir/.$project/\' >> \'$workdir/.apostilator.log\' 2>&1");
 
     use POSIX qw(strftime);
     my $now = strftime "%Y%m%d", localtime;
@@ -280,39 +293,63 @@ sub backup() {
             $j = $i-1;
             $j = ".$j";
         }
-        if (-e "$workdir/../$file$j") { system("mv $workdir/../$file$j $workdir/../$file.$i") }
+        if (-e "$workdir/../$file$j") { system("mv \"$workdir/../$file$j\" \"$workdir/../$file.$i\"") }
     }
-    system("mv $workdir/.$project $workdir/$project");
-    system("tar czf $workdir/../$file ./$project -C $workdir/");
-    system("rm -rf $workdir/$project");
+    system("mv \"$workdir/.$project\" \"$workdir/$project\"");
+    system("tar czf \"$workdir/../$file\" \"./$project\" -C \"$workdir/\"");
+    system("rm -rf \"$workdir/$project\"");
     print "Backup $file created.\n";
 }
 
 sub set_author() {
   my ( $author ) = @_;
-  system("sed -i \'s/\{\\\\small.*\}/\{\\\\small $author\}/\' $workdir/.tex/titlepage.tex");
+  system("sed -i \'s/.*\@author/\{\\\\small $author\} %% \@author/\' \"$workdir/.tex/titlepage.tex\"");
 }
 
 sub set_title() {
   my ( $title ) = @_;
-  system("sed -i \'s/.*\\\\sf\$//\'  $workdir/.tex/titlepage.tex");
-  system("sed -i \'s/.*\\\\vskip 0.15cm/\{\\\\huge \\\\sf \{$title\}\\\\vskip 0.15cm/\' $workdir/.tex/titlepage.tex");
+  system("sed -i \'s/.*\@title/\{\\\\huge \\\\sf \{$title\}\\\\vskip 0.15cm %% \@title/\' \"$workdir/.tex/titlepage.tex\"");
 }
 
-sub set_customer() {
-  my ( $customer ) = @_;
-  system("sed -i \'s/  \{\\\\huge.*\}/  \{\\\\huge $customer\}/\' $workdir/.tex/titlepage.tex");
+sub set_date() {
+  my ( $date ) = @_;
+  system("sed -i \'s/.*\@date/  \{\\\\huge $date\} %% \@date/\' \"$workdir/.tex/titlepage.tex\"");
+}
+
+sub set_chapter_footer() {
+  my ( $chapterfooter ) = @_;
+  system("sed -i \'s/.*\@chapterfooter/  \\\\fancyfoot[L]\{\\\\bf \\\\small \\\\slshape $chapterfooter\} %% \@chapterfooter\' \"$workdir/.tex/titlepage.tex\"");
+}
+
+sub set_footer() {
+  my ( $footer ) = @_;
+  system("sed -i \'s/.*\@footer/    \\\\fancyfoot[L]\{\\\\bf \\\\small \\\\slshape $footer %% \@footer\' \"$workdir/.tex/titlepage.tex\"");
+}
+
+sub set_header() {
+  my ( $header ) = @_;
+  system("sed -i \'s/.*\@header/    \\\\fancyhead[L]\{\\\\bf $header\} %% \@header/\' \"$workdir/.tex/titlepage.tex\"");
 }
 
 sub make_lst() {
-  print "$workdir\n";
   opendir(DIR, $workdir);
-  my $file;
-  while (defined($file = readdir(DIR))) {
-    if ( $file =~ /^[0-8].*\.xml$/ ) {
-      print "$file\n";
+  my @files = readdir DIR;
+  closedir DIR;
+  my @files_sorted = sort @files;
+  open CHAP, ">$workdir/Chapters.lst";
+  open APPD, ">$workdir/Appendix.lst";
+  foreach (@files_sorted) {
+    if ( $_ =~ /^[0-8].*\.axml$/ ) {
+      print CHAP "$_\n";
+    } elsif ( $_ =~ /^[9].*\.axml$/ ) {
+      print APPD "$_\n";
+    } elsif ( $_ =~ /^[0-9].*$/ ) {
+      print "Please, use .axml files (Apostilator-XML). Ignoring file $_\n";
     }
   } 
+  close CHAP;
+  close APPD;
+
 }
 
 sub start() {
@@ -402,16 +439,17 @@ sub create_symlinks() {
     
     mkdir("$workdir/.tex", 0755);
     mkdir("$workdir/imgs", 0755);
-    system("rm -rf $workdir/.tex/imgs 2>/dev/null");
+
+    unlink("$workdir/.tex/imgs");
     symlink("../imgs",".tex/imgs");
-    
+
     unless (-e "$workdir/Bibliography.bib") {
       open BIBLIOGRAFY, ">$workdir/Bibliography.bib" or die "Error open file: Bibliography.bib.\n";
       print BIBLIOGRAFY "\n";
       close BIBLIOGRAFY;
     }
     unlink("$workdir/.tex/Bibliography.bib");
-    symlink("../Bibliography.bib" ,".tex/Bibliography.bib");
+    symlink("../Bibliography.bib",".tex/Bibliography.bib");
 }
 
 sub create_bibliography() {
@@ -447,7 +485,7 @@ sub create_bibliography() {
     close BIBLIOGRAFY;
     print "Converting to Tex: $workdir/Bibliography.bib.\n";
     chdir "$workdir/.tex";
-    system("bibtex base >> $workdir/.apostilator.log 2>&1");
+    system("bibtex base >> \'$workdir/.apostilator.log\' 2>&1");
 }
 
 sub convert_apostila() {
@@ -478,17 +516,21 @@ sub convert_filelist() {
     my $i = 0;
     while ( <XML> ) {
         next if (/^(\#|\/|\;)/);
-        if (/\.\w+$/) {
-            print "Please, use files without extensions. Ignoring file ${_}";
-            next;
-        }
+        if (/\.axml$/) {
         my $line = $_;
         $line =~ s/\n//;
-        my $inFile = "$workdir/$line.xml";
+        $line =~ s{.*/}{};
+        my $inFile = "$workdir/$line";
+        $line =~ s{\.[^.]+$}{};
         my $outFile = "$workdir/.tex/$line.tex";
         &convert_file2latex( $inFile , $outFile , $resFileXML);
         print TEX "\\input{$line}\n";
         $i++;
+        } else {
+            print "Please, use .axml files (Apostilator-XML). Ignoring file ${_}";
+            next;
+        }
+		
     }
     close XML;
     close TEX;
