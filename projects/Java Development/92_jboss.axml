@@ -1,0 +1,260 @@
+<capitulo>JBoss AS 6</capitulo>
+
+<subsecao>Instalação</subsecao>
+
+<subsubsecao>Download</subsubsecao>
+
+	O instalador do JBoss AS 6 (6.0.0.Final) pode ser obtido no seguinte endereço:
+
+<lista>
+<item/> http://www.jboss.org/jbossas/downloads
+<item/> http://ufpr.dl.sourceforge.net/project/jboss/JBoss/JBoss-6.0.0.Final/jboss-as-distribution-6.0.0.
+Final.zip
+</lista>
+
+<figura>
+    <tamanhob>1.0</tamanhob>
+    <arquivob>imgs/jbossAS_download_01</arquivob>
+    <legenda>www.jboss.org</legenda>
+    <nome>fig:jb-site-01</nome>
+</figura>
+
+<subsubsecao>Instalação</subsubsecao>
+
+	Os passos abaixo descrevem a instalação do servidor de aplicação:
+
+<comando>
+# cd /opt
+# wget http://ufpr.dl.sourceforge.net/.../jboss-as-distribution-6.0.0.Final.zip
+# unzip jboss-as-distribution-6.0.0.Final.zip
+# chown -R root: /opt/jboss-6.0.0.Final
+</comando>
+
+<subsubsecao>Pós-instalação</subsubsecao>
+
+<lista>
+<item/>	Procedimentos pós-instalação:
+</lista>
+
+<comando>
+# adduser --home /opt/jboss-6.0.0.Final --no-create-home --system jboss6
+# cd /opt/jboss-6.0.0.Final/server/
+# cp -a default local
+# cd local
+# mkdir deploy.disabled tmp data log work
+# chown jboss6: deploy.disabled tmp data log work
+</comando>
+
+<lista>
+<item/>	Parâmetros de inicialização: ajustar parâmetros -Xms/-Xmx (l. 43):
+/opt/jboss-6.0.0.Final/bin/run.conf
+</lista>
+
+<comando>
+if [ "x$JAVA_OPTS" = "x" ]; then
+   JAVA_OPTS="-Xms1024m -Xmx1024m ... 
+fi
+</comando>
+
+<lista>
+<item/>	Desativação de serviços:
+</lista>
+
+<comando>
+# mv deploy/ROOT.war deploy.disabled/
+# mv deploy/jmx-console-activator-jboss-beans.xml deploy.disabled/
+# mv deploy/admin-console-activator-jboss-beans.xml deploy.disabled/
+# mv deploy/jbossws-console-activator-jboss-beans.xml deploy.disabled/
+</comando>
+
+<lista>
+<item/>	Deploy:
+</lista>
+
+<comando>
+# adduser --shell /noshell \
+          --home /opt/jboss-6.0.0.Final/server/local/deploy.ftp deployer 
+# mkdir /opt/jboss-6.0.0.Final/server/local/deploy.ftp/deploy
+# chown deployer: /opt/jboss-6.0.0.Final/server/local/deploy.ftp/deploy
+</comando>
+
+<b>/opt/jboss-6.0.0.Final/server/local/conf/bootstrap/profile.xml</b>:
+adicionar novo diretório de deploy (deploy.ftp/deploy) na configuração do bean
+<i>UserProfileFactory</i> (l.30).
+
+<comando>
+<list elementClass="java.net.URI">
+    <value>${jboss.server.home.url}deploy</value>
+    <value>${jboss.server.home.url}deploy.ftp/deploy</value>  <!-- esta linha -->
+</list>
+</comando>
+
+<comando>
+# aptitude install vsftpd
+# echo /noshell >> /login-noshell
+</comando>
+
+<comando>
+anonymous_enable=NO
+local_enable=YES
+write_enable=YES
+ftpd_banner=FTP server ready.
+chroot_local_user=YES
+</comando>
+
+
+<lista>
+<item/>	Driver JDBC:
+</lista>
+
+<comando>
+cp /path/to/ojdbc14_g.jar /opt/jboss-6.0.0.Final/server/local/lib
+</comando>
+
+
+<subsubsecao>Inicialização</subsubsecao>
+
+	Deve-se criar o seguinte <i>invoke script</i> para realizar a inicialização e
+parada do servidor de aplicação de forma apropriada, salve o conteúdo abaixo
+em <i>/etc/init.d/jboss6</i>.
+
+<comandoNumerado>
+#!/bin/bash
+
+start() {
+  if [ "$(pgrep -c java)" -ne "1" ] ; then
+    echo -n "Starting JBoss AS 6"
+    su -l jboss6 -s /bin/bash \
+       -c '/opt/jboss-6.0.0.Final/bin/run.sh -b 0.0.0.0 -c local >/dev/null 2>&1 &'
+    echo .
+  else
+    echo "JBoss AS 6 already running."
+  fi
+}
+
+# warning: stop all java applications
+stop() {
+  echo -n "Stopping JBoss AS 6"
+  su -l jboss6 -s /bin/bash \
+     -c '/opt/jboss-6.0.0.Final/bin/shutdown.sh -S >/dev/null 2>&1'
+  i=0
+  while true; do
+    if [ $i -gt 15 ] ; then
+      su -l jboss6 -s /bin/bash -c "kill -9 $(pgrep java)" > /dev/null 2>&1
+    elif [ $i -gt 10 ] ; then
+      su -l jboss6 -s /bin/bash -c "kill $(pgrep java)" > /dev/null 2>&1
+    fi
+    if (ps -ef | grep -v grep | grep -q java) ; then
+      echo -n .
+      sleep 2
+    else
+      break
+    fi
+    let i++
+  done
+  rm /opt/jboss-6.0.0.Final/server/local/tmp/* >/dev/null 2>&1
+  rm /opt/jboss-6.0.0.Final/server/local/work/* >/dev/null 2>&1
+  echo .
+}
+
+restart() {
+  stop
+  start
+}
+
+case "$1" in
+  start)
+    start
+  ;;
+  stop)
+    stop
+  ;;
+  restart)
+    restart
+  ;;
+  *)
+    echo "Usage: $0 {start | stop | restart}"
+    exit 1
+  ;;
+esac
+
+exit 0
+</comandoNumerado>
+
+    Deve-se cadastar o referido <i>invoke script</i> para ser executado
+durante a inicialização e desligamento do sistema operacional, conforme
+indicado abaixo:
+
+<comando>
+# chmod 755 /etc/init.d/jboss6
+# update-rc.d -f jboss6 defaults
+</comando>
+
+<subsecao>Proxy Fron-end</subsecao>
+
+<comando>
+aptitude install apache2 libapache2-mod-jk
+</comando>
+
+<lista>
+<item/>/etc/apache2/mods-available/jk.properties
+</lista>
+
+<comando>
+worker.list=local
+
+worker.local.type=ajp13
+worker.local.host=127.0.0.1
+worker.local.port=8009
+worker.local.socket_timeout=10
+worker.local.socket_keepalive=True
+worker.local.connection_pool_size=30
+</comando>
+
+<lista>
+<item/>/etc/apache2/mods-available/jk.conf 
+</lista>
+
+<comando>
+<IfModule mod_jk.c>
+    JkWorkersFile   /etc/apache2/mods-available/jk.properties
+    JkLogFile       /var/log/apache2/mod_jk.log
+    JkLogLevel      info
+    JkLogStampFormat        "[%a %b %d %H:%M%S %Y] "
+    JkShmFile       /var/run/apache2/jk.shm
+</IfModule>
+</comando>
+
+<lista>
+<item/>Reativar mod_jk (link em mods-enabled para jk.conf)
+</lista>
+
+<comando>
+a2dismod jk
+a2enmod jk
+</comando>
+
+
+
+<lista>
+<item/>VirtualHost: /etc/apache2/sites-available/aelis
+</lista>
+
+<comando>
+<VirtualHost *:80>
+    ServerName aelis.tre-pa.gov.br
+    ServerAlias www.aelis.tre-pa.gov.br
+
+    JkMount /aelis/* local
+
+    RewriteEngine On
+    RewriteLog "/var/log/apache2/aelis.log"
+    RewriteCond %{REQUEST_URI} !^/aelis/
+    RewriteRule ^/(.*) /aelis/$1 [R,L]
+</VirtualHost>
+</comando>
+
+<comando>
+a2enmod rewrite
+a2ensite aelis
+</comando>

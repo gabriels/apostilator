@@ -1,0 +1,57 @@
+#!/bin/bash
+
+start() {
+	if [ "$(pgrep -c java)" -ne "1" ] ; then
+		echo -n "Starting JBoss AS 6"
+		su -l jboss6 -s /bin/bash -c '/opt/jboss-6.0.0.Final/bin/run.sh -b 0.0.0.0 -c local >/dev/null 2>&1 &'
+		echo .
+	else
+		echo "JBoss AS 6 already running."
+	fi
+}
+
+# warning: stop all java applications
+stop() {
+	echo -n "Stopping JBoss AS 6"
+	su -l jboss6 -s /bin/bash -c '/opt/jboss-6.0.0.Final/bin/shutdown.sh -S >/dev/null 2>&1'
+	i=0
+	while true; do
+		if [ $i -gt 15 ] ; then
+			su -l jboss6 -s /bin/bash -c "kill -9 $(pgrep java)" > /dev/null 2>&1
+		elif [ $i -gt 10 ] ; then
+			su -l jboss6 -s /bin/bash -c "kill $(pgrep java)" > /dev/null 2>&1
+		fi
+		if (ps -ef | grep -v grep | grep -q java) ; then
+			echo -n .
+			sleep 2
+		else
+			break
+		fi
+		let i++
+	done
+	rm /opt/jboss-6.0.0.Final/server/local/tmp/* >/dev/null 2>&1
+	rm /opt/jboss-6.0.0.Final/server/local/work/* >/dev/null 2>&1
+	echo .
+}
+
+restart() {
+	stop
+	start
+}
+
+case "$1" in
+   start)
+         start
+         ;;
+   stop)
+         stop
+         ;;
+   restart)
+         restart
+         ;;
+   *)
+         echo "Usage: $0 {start | stop | restart}"
+         exit 1
+esac
+
+exit 0
