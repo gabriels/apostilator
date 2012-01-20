@@ -341,14 +341,15 @@ $ unzip /path/to/jboss-as-distribution-6.1.0.Final.zip
 </figura>
 
 	Agora, sugere-se que a publicação (<i>deploy</i>) automática seja
-desativada, conforme os seguintes procedimentos:
+desativada para evitar que um novo deploy seja realizado para cada arquivo
+salvo. Siga os seguintes procedimentos:
 
 <lista>
 	<item/> identifique a nova instância <b>JBoss 6.x Runtime Server</b> na
 	aba <b>Servers</b>;
 	<item/> clique com botão contrário do mouse na instância e selecione no
 	menu a opção <b>Open</b>;
-	<item/> no wizard, identifique a seção <b>Publishing</b> e selecione:
+	<item/> no wizard, identifique a seção <b>Publishing</b>, e selecione:
 	<b>never publish automatically</b>;
 	<item/> salve a configuração (Ctrl+S);
 </lista>
@@ -358,6 +359,28 @@ desativada, conforme os seguintes procedimentos:
     <arquivob>imgs/jbossAS_eclipseConfig_03</arquivob>
     <legenda>Desabilitando publicação (deploy) automático</legenda>
     <nome>fig:jbossAS-eclipse-03</nome>
+</figura>
+
+	Sugere-se que o diretório de publicação (<i>deploy</i>) seja alterado,
+pois casos exporádicos o diretório padrão dentro do workspace não aceita
+republicação. Siga os seguintes procedimentos ainda no <i>wizard</i> de
+configuração do servidor de aplicações:
+
+<lista>
+	<item/> selecione a subaba <b>Deployment</b> na parte inferior do <i>wizard</i>;
+	<item/> identifique a seção <b>Default Settings</b>, e selecione:
+	<b>Use the JBoss deploy folder</b>;
+	<item/> salve a configuração (Ctrl+S);
+</lista>
+
+	A partir das configuração supramencionadas, o diretório de publicação será:
+<i>/opt/eclipse/workset/ jboss-6.1.0.Final/server/default/deploy</i>.
+
+<figura>
+    <tamanhob>1.0</tamanhob>
+    <arquivob>imgs/jbossAS_eclipseConfig_04</arquivob>
+    <legenda>Alterando diretório de publicação (deploy)</legenda>
+    <nome>fig:jbossAS-eclipse-04</nome>
 </figura>
 
 <quebraPagina/>
