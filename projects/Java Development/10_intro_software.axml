@@ -4,7 +4,7 @@
 
     Os sistemas operacionais baseados em tecnologias livres tendem a fornecer
 um utilitário que realiza instalações automatizadas, sendo no Debian
-utilizado o <b>aptitude</b>.
+<citar>Debian</citar> utilizado o <b>aptitude</b>.
 
     Ao realizar a instalação de um determinado <i>software</i>, este informa
 ao <i>aptitude</i> quais bibliotecas são necessárias para o seu
