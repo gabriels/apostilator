@@ -34,9 +34,9 @@ Acquire::http::Proxy "http://192.168.0.1:3128";
 <b>/etc/apt/sources.list</b>, conforme indicado a seguir:.
 
 <comando>
-deb http://security.debian.org/ squeeze/updates main
+deb http://security.debian.org/ squeeze/updates main contrib non-free
 deb http://ftp.br.debian.org/debian/ squeeze main contrib non-free
-deb http://ftp.br.debian.org/debian/ squeeze-updates main
+deb http://ftp.br.debian.org/debian/ squeeze-updates main contrib non-free
 </comando>
 
     Após a definição das fontes, é necessário o <i>download</i> da lista de
