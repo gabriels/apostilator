@@ -26,7 +26,7 @@ Apostilator Classic - A Latex Interface
 **************
 
         O Apostilator é um processador de arquivos .axml "Apostilator-XML",
-    conversor para LaTeX e e gerador de PDF. É formado pelo executável
+    conversor para LaTeX e gerador de PDF. É formado pelo executável
     "apostilator.pl" e por um diretório para cada projeto de apostila. Um
     projeto inicial esta disponível em "project-example", e você deve usá-lo
     como ponto de partida.
@@ -67,7 +67,7 @@ Apostilator Classic - A Latex Interface
         # cp -a /path/to/project-example /home/rei/Projetos-AXML/Postfix
 
         Adicione os capítulos em formato AXML no diretório (ex:
-    "./Postfix/Capitulo01.xml" e inclua esta arquivo .axml em
+    "./Postfix/Capitulo01.axml" e inclua esta arquivo .axml em
     "./Postfix/Chapters.lst".
 
         Caso seus arquivos de capítulos .axml começem por números de 1 a 8
