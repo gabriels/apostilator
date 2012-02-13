@@ -139,7 +139,7 @@ aptitude install libxtst6
 administração do servidor de aplicação, acessível através da endereço:
 
 <lista>
-<item/><b>http://paappgf01.redetre.jus.br:4848</b> 
+<item/><b>http://appserver.example.com:4848</b>
 </lista>
 
 <subsubsecao>Pool de conexão</subsubsecao>
