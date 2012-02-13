@@ -1,0 +1,101 @@
+#!/bin/bash
+# Glassfish3 invoke script
+# Copyright (c) 2012 - Reinaldo de Carvalho <reinaldoc@gmail.com>
+
+### BEGIN INIT INFO
+# Provides:          glassfish3
+# Required-Start:    $all
+# Required-Stop:     $all
+# Default-Start:     2 3 4 5
+# Default-Stop:      0 1 6
+# Short-Description: Glassfish3 invoke script
+### END INIT INFO
+
+
+# @param $1 string to be checked
+# @return int command execution status
+function isEmpty {
+	[[ $1 =~ ^[[:space:]]*$ ]]
+	return $?
+}
+
+# @param $1 domain name
+# @return void set $GFPID with grassfish pid
+function setGfPid() {
+	GFPID=$(ps -ef | grep -E "bin/java.*glassfish.jar.*$1" | grep -v ' grep ' | tr -s ' ' | cut -f2 -d ' ')
+}
+
+# @param $1 optional kill signal
+# @return void kill glassfish pid
+function killGf() {
+	if ! isEmpty "$GFPID" ; then
+		kill "$1" "$GFPID" > /dev/null 2>&1
+	fi
+}
+
+# @param $1 domain name
+function startdomain() {
+	if isEmpty "$1"; then
+		echo "Err: domain required as argument"
+		return
+	fi
+	echo -n "Starting Java Application Server: glassfish3"
+	setGfPid "$1"
+	if isEmpty "$GFPID"; then
+		su -l glassfish3 -c "/opt/glassfish3/glassfish/bin/asadmin start-domain \"$1\" > /dev/null 2>&1"
+		echo " ($1)."
+	else
+		echo " ($1 already started)."
+	fi
+}
+
+# @param $1 domain name
+function stopdomain() {
+	if isEmpty "$1"; then
+		echo "Err: domain required as argument"
+		return
+	fi
+	echo -n "Stopping Java Application Server: glassfish3"
+	setGfPid "$1"
+	if isEmpty "$GFPID"; then
+		echo " ($1 already stopped)."
+		return
+	fi
+	su -l glassfish3 -c "/opt/glassfish3/glassfish/bin/asadmin stop-domain \"$1\" > /dev/null 2>&1"
+	i=0
+	while true; do
+		setGfPid "$1"
+		if ! isEmpty "$GFPID" ; then
+			if [ $i -gt 10 ] ; then
+				killGf -9
+			elif [ $i -gt 5 ] ; then
+				killGf
+			fi
+			echo -n .
+			sleep 2
+		else
+			break
+		fi
+		let i++
+	done
+	echo .
+}
+
+case "$1" in
+	start)
+		startdomain domain1
+	;;
+	stop)
+		stopdomain domain1
+	;;
+	restart)
+		stopdomain domain1
+		startdomain domain1
+	;;
+	*)
+		echo "Usage: $0 {start | stop | restart}"
+		exit 1
+	;;
+esac
+
+exit 0

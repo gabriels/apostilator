@@ -1,0 +1,364 @@
+<capitulo>GlassFish 3.1.1</capitulo>
+
+<subsecao>Instalação</subsecao>
+
+<subsubsecao>Download</subsubsecao>
+
+	O instalador do Glassfish 3.1.1 pode ser obtido no seguinte endereço:
+
+<lista>
+<item/> http://glassfish.java.net/downloads/3.1.1-final.html
+<item/> http://download.java.net/glassfish/3.1.1/release/glassfish-3.1.1-unix-ml.sh
+</lista>
+
+<subsubsecao>Instalação</subsubsecao>
+
+	Deve-se criar um usuário (ex. glassfish3) para execução do servidor de
+aplicação, e garantir permissão de escrita no diretório de instalação.
+Após a instalação, a permissão original do diretório /opt será definida.
+
+<comando>
+# aptitude install libxtst6
+# adduser --home /opt --no-create-home --shell /bin/bash --system glassfish3
+# chown glassfish3 /opt
+# passwd glassfish3
+# exit
+</comando>
+
+	Os passos abaixo descrevem a instalação do servidor de aplicação:
+
+<comando>
+$ ssh -X glassfish3@appserver
+$ wget http://download.java.net/glassfish/3.1.1/release/glassfish-3.1.1-unix-ml.sh
+$ chmod +x glassfish-3.1.1-unix-ml.sh
+$ ./glassfish-3.1.1-unix-ml.sh
+</comando>
+
+	O instalador será inicializado, e realize:
+
+<lista>
+<item/> Clique em <b>Avançar</b>;
+<item/> Selecione <b>Instalação personalizada</b> e clique em <b>Avançar</b>;
+<item/> Selecione <b>Instalar e configurar</b> e clique em <b>Avançar</b>;
+<item/> Indique o diretório de instalação: <b>/opt/glassfish3</b>;
+</lista>
+
+<figura>
+    <tamanhob>0.9</tamanhob>
+    <arquivob>imgs/gf3_install_01</arquivob>
+    <legenda>Seleção do diretório de instalação</legenda>
+    <nome>fig:gf3-install-1</nome>
+</figura>
+
+<lista>
+<item/> Verifique o JDK identificado e clique em <b>Avançar</b>;
+</lista>
+
+<figura>
+    <tamanhob>0.9</tamanhob>
+    <arquivob>imgs/gf3_install_02</arquivob>
+    <legenda>Identificação do ambiente JDK</legenda>
+    <nome>fig:gf3-install-1</nome>
+</figura>
+
+<lista>
+<item/> Desabilite o item <b>Instalar ferramenta de atualização</b> e clique em <b>Avançar</b>;
+<item/> Clique em <b>Instalar</b>;
+<item/> Selecione <b>Criar um domínio do servidor</b> e clique em <b>Avançar</b>;
+<item/> Identifique as informações solicitadas apropriadamente e clique em <b>Avançar</b>;
+</lista>
+
+<figura>
+    <tamanhob>0.9</tamanhob>
+    <arquivob>imgs/gf3_install_03</arquivob>
+    <legenda>Configuração do domain1</legenda>
+    <nome>fig:gf3-install-1</nome>
+</figura>
+
+<lista>
+<item/> Clique em <b>Sair</b>;
+</lista>
+
+
+<subsubsecao>Pós-instalação</subsubsecao>
+
+	Após a instalação deve-se realizar os seguintes procedimentos como
+<i>root</i>:
+
+<comando>
+# cd /opt
+# mv /opt/.asadminpass /opt/glassfish3/
+# usermod -d /opt/glassfish3 glassfish3
+# chown root: /opt
+</comando>
+
+	A partir da sua estação realize download do <i>Oracle Database 10g
+Release 2 JDBC Driver</i> (ojdbc14.jar) e envie ao servidor:
+
+<comando>
+$ scp ojdbc14.jar glassfish3@appserver:/opt/glassfish3/glassfish/lib/
+</comando>
+
+<subsubsecao>Inicialização</subsubsecao>
+
+	Deve-se criar o seguinte <i>invoke script</i> para realizar a inicialização e
+parada do servidor de aplicação de forma apropriada, salve o conteúdo abaixo
+em <i>/etc/init.d/glassfish2</i>.
+
+<comandoNumerado>
+#!/bin/bash
+# Glassfish3 invoke script
+# Copyright (c) 2012 - Reinaldo de Carvalho <reinaldoc@gmail.com>
+
+### BEGIN INIT INFO
+# Provides:          glassfish3
+# Required-Start:    $all
+# Required-Stop:     $all
+# Default-Start:     2 3 4 5
+# Default-Stop:      0 1 6
+# Short-Description: Glassfish3 invoke script
+### END INIT INFO
+
+# TODO: debianize putting domain names in /etc/default/glassfish3
+# TODO: debianize using start-stop-daemon instead of su
+
+# @param $1 string to be checked
+# @return int command execution status
+function isEmpty {
+	[[ $1 =~ ^[[:space:]]*$ ]]
+	return $?
+}
+
+# @param $1 domain name
+# @return void set $GFPID with grassfish pid
+function setGfPid() {
+	GFPID=$(ps -ef | grep -E "bin/java.*glassfish.jar.*$1" | \
+			grep -v ' grep ' | tr -s ' ' | cut -f2 -d ' ')
+}
+
+# @param $1 optional kill signal
+# @return void kill glassfish pid
+function killGf() {
+	if ! isEmpty "$GFPID" ; then
+		kill "$1" "$GFPID" > /dev/null 2>&1
+	fi
+}
+
+# @param $1 domain name
+function startdomain() {
+	if isEmpty "$1"; then
+		echo "Err: domain required as argument"
+		return
+	fi
+	echo -n "Starting Java Application Server: glassfish3"
+	setGfPid "$1"
+	if isEmpty "$GFPID"; then
+		su -l glassfish3 -c "/opt/glassfish3/glassfish/bin/asadmin \
+					start-domain \"$1\" > /dev/null 2>&1"
+		echo " ($1)."
+	else
+		echo " ($1 already started)."
+	fi
+}
+
+# @param $1 domain name
+function stopdomain() {
+	if isEmpty "$1"; then
+		echo "Err: domain required as argument"
+		return
+	fi
+	echo -n "Stopping Java Application Server: glassfish3"
+	setGfPid "$1"
+	if isEmpty "$GFPID"; then
+		echo " ($1 already stopped)."
+		return
+	fi
+	su -l glassfish3 -c "/opt/glassfish3/glassfish/bin/asadmin \
+					stop-domain \"$1\" > /dev/null 2>&1"
+	i=0
+	while true; do
+		setGfPid "$1"
+		if ! isEmpty "$GFPID" ; then
+			if [ $i -gt 10 ] ; then
+				killGf -9
+			elif [ $i -gt 5 ] ; then
+				killGf
+			fi
+			echo -n .
+			sleep 2
+		else
+			break
+		fi
+		let i++
+	done
+	echo .
+}
+
+case "$1" in
+	start)
+		startdomain domain1
+	;;
+	stop)
+		stopdomain domain1
+	;;
+	restart)
+		stopdomain domain1
+		startdomain domain1
+	;;
+	*)
+		echo "Usage: $0 {start | stop | restart}"
+		exit 1
+	;;
+esac
+
+exit 0
+
+</comandoNumerado>
+
+	Deve-se cadastar o referido <i>invoke script</i> para ser executado
+durante a inicialização e desligamento do sistema operacional, conforme
+indicado abaixo:
+
+<comando>
+# chmod 755 /etc/init.d/glassfish3
+# update-rc.d -f glassfish3 defaults
+</comando>
+
+<subsubsecao>Problemas</subsubsecao>
+
+<lista>
+<item/><b>libXtst.so.6: cannot open shared object file</b>
+</lista>
+
+<comando>
+java.lang.UnsatisfiedLinkError:
+/usr/lib/jvm/java-6-sun-1.6.0.26/jre/lib/amd64/xawt/libmawt.so:
+/libXtst.so.6: cannot open shared object file: No such file or directory
+        at java.lang.ClassLoader$NativeLibrary.load(Native Method)
+[...]
+        at org.openinstaller.core.EngineBootstrap.main(EngineBootstrap.java:208)
+SEVERE INTERNAL ERROR:
+/usr/lib/jvm/java-6-sun-1.6.0.26/jre/lib/amd64/xawt/libmawt.so:
+/libXtst.so.6: cannot open shared object file: No such file or directory
+</comando>
+
+<lista>
+<item/><b>Solução</b>
+</lista>
+
+<comando>
+aptitude install libxtst6
+</comando>
+
+<subsecao>Publicação de Aplicação (Deploy)</subsecao>
+
+	Os procedimentos a seguir serão realizados no console web de
+administração do servidor de aplicação, acessível através da endereço:
+
+<lista>
+<item/><b>http://appserver.example.com:4848</b> 
+</lista>
+
+<subsubsecao>Pool de conexão</subsubsecao>
+
+	O servidor de aplicação faz ponte para o acesso da aplicação a
+banco de dados relacionais, aplicando controles sobre estes acesso. Isto
+ocorre através do pool de conexões, que dentre os controles, pode limitar
+a quantidade de conexões ao banco.
+
+	Em geral, cada aplicação utiliza seu próprio pool de conexões, que deve
+ser configurado através do console web de administração, conforme indicado:
+
+<lista>
+<item/><b>Resources</b> => <b>JDBC</b> => <b>Connection Pools</b>
+</lista>
+
+<figura>
+    <tamanhob>1.0</tamanhob>
+    <arquivob>imgs/gf2_cPool_01</arquivob>
+    <legenda>Novo pool de conexão</legenda>
+    <nome>fig:gf2-connection-pool-1</nome>
+</figura>
+
+<figura>
+    <tamanhob>1.0</tamanhob>
+    <arquivob>imgs/gf2_cPool_02</arquivob>
+    <legenda>Identificar o pool de conexão</legenda>
+    <nome>fig:gf2-connection-pool-2</nome>
+</figura>
+
+<figura>
+    <tamanhob>1.0</tamanhob>
+    <arquivob>imgs/gf2_cPool_03</arquivob>
+    <legenda>Configurar o pool de conexão</legenda>
+    <nome>fig:gf2-connection-pool-3</nome>
+</figura>
+
+<figura>
+    <tamanhob>1.0</tamanhob>
+    <arquivob>imgs/gf2_cPool_04</arquivob>
+    <legenda>Conferir o pool de conexão</legenda>
+    <nome>fig:gf2-connection-pool-4</nome>
+</figura>
+
+<subsubsecao>JDBC</subsubsecao>
+
+	O recurso JDBC é utilizado para associar um nome JNDI a um pool de conexões
+previamente criado, e deve ser configurado através do console web de
+administração, conforme indicado:
+
+<lista>
+<item/><b>Resources</b> => <b>JDBC</b> => <b>JDBC Resources</b>
+</lista>
+
+<figura>
+    <tamanhob>1.0</tamanhob>
+    <arquivob>imgs/gf2_JDBC_01</arquivob>
+    <legenda>Novo recurso JDBC</legenda>
+    <nome>fig:gf2-jdbc-1</nome>
+</figura>
+
+<figura>
+    <tamanhob>1.0</tamanhob>
+    <arquivob>imgs/gf2_JDBC_02</arquivob>
+    <legenda>Identificar o recurso JDBC</legenda>
+    <nome>fig:gf2-jdbc-2</nome>
+</figura>
+
+<figura>
+    <tamanhob>1.0</tamanhob>
+    <arquivob>imgs/gf2_JDBC_03</arquivob>
+    <legenda>Conferir o recurso JDBC</legenda>
+    <nome>fig:gf2-jdbc-3</nome>
+</figura>
+
+<subsubsecao>Deploy</subsubsecao>
+
+	A publicação de uma aplicação deve ser realizada através do console web
+de administração, conforme indicado:
+
+<lista>
+<item/><b>Applications</b> => <b>Entreprise Applications</b>
+</lista>
+
+<figura>
+    <tamanhob>1.0</tamanhob>
+    <arquivob>imgs/gf2_deploy_01</arquivob>
+    <legenda>Publicação de sistema</legenda>
+    <nome>fig:gf2-deploy-1</nome>
+</figura>
+
+<figura>
+    <tamanhob>1.0</tamanhob>
+    <arquivob>imgs/gf2_deploy_02</arquivob>
+    <legenda>Selecionar o pacote com o sistema</legenda>
+    <nome>fig:gf2-deploy-1</nome>
+</figura>
+
+<figura>
+    <tamanhob>1.0</tamanhob>
+    <arquivob>imgs/gf2_deploy_03</arquivob>
+    <legenda>Conferir a publicação do sistema</legenda>
+    <nome>fig:gf2-deploy-1</nome>
+</figura>
+
