@@ -1,35 +1,32 @@
 Apostilator Classic - A Latex Interface
 ***************************************
-Copyright (C) 2007-2012 Reinaldo de Carvalho <reinaldoc@gmail.com>
-Copyright (C) 2005-2006 Luiz C. B. Mostaço Guidolin <lcguid@gmail.com>
 
-1. Apostilator Classic Website
-******************************
+        Apostilator é uma interface baseada em um processador XML para
+    LaTeX que simplifica o processo de escrita de documentos.
 
-    http://apostilator.sf.net
-
-2. Dependencias
+1. Dependencias
 ***************
 
-    2.1 Debian
+    1.1 Debian
     **********
         # echo 'Aptitude::Recommends-Important "false";' >> /etc/apt/apt.conf
-        # aptitude install perl texlive texlive-latex-recommended texlive-latex-extra texlive-fonts-extra
+        # aptitude install perl texlive texlive-latex-recommended \
+                           texlive-latex-extra texlive-fonts-extra
 
-    2.2 Gentoo
+    1.2 Gentoo
     **********
         # install: perl tetex latex-unicode
 
-3. Instalação
+2. Instalação
 *************
 
     # cp apostilator.pl /usr/bin
 
-4. Introdução
-*************
+3. Arquitetura
+**************
 
         O Apostilator é um processador de arquivos .axml "Apostilator-XML",
-    conversor para LaTeX e e gerador de PDF. É formado pelo executável
+    conversor para LaTeX e gerador de PDF. É formado pelo executável
     "apostilator.pl" e por um diretório para cada projeto de apostila. Um
     projeto inicial esta disponível em "project-example", e você deve usá-lo
     como ponto de partida.
@@ -50,7 +47,7 @@ Copyright (C) 2005-2006 Luiz C. B. Mostaço Guidolin <lcguid@gmail.com>
     diretório corrente ($PWD) ou especifique através da opção "--workdir=".
     A apostila será gerada em /Nome-do-projeto.pdf.
 
-5. Padrão "apostilator-XML"
+4. Padrão "apostilator-XML"
 ***************************
 
         A sintaxe dos documentos do projeto esta descrita na Apostila criada
@@ -61,7 +58,7 @@ Copyright (C) 2005-2006 Luiz C. B. Mostaço Guidolin <lcguid@gmail.com>
     $ cd /path/apostilator-version/project-manual
     $ apostilator.pl
 
-6. O Projeto
+5. Apostilas
 ************
 
         Para iniciar um projeto chamado "Postfix" de uma nova apostila, copie
@@ -70,7 +67,7 @@ Copyright (C) 2005-2006 Luiz C. B. Mostaço Guidolin <lcguid@gmail.com>
         # cp -a /path/to/project-example /home/rei/Projetos-AXML/Postfix
 
         Adicione os capítulos em formato AXML no diretório (ex:
-    "./Postfix/Capitulo01.xml" e inclua esta arquivo .axml em
+    "./Postfix/Capitulo01.axml" e inclua esta arquivo .axml em
     "./Postfix/Chapters.lst".
 
         Caso seus arquivos de capítulos .axml começem por números de 1 a 8
@@ -82,7 +79,7 @@ Copyright (C) 2005-2006 Luiz C. B. Mostaço Guidolin <lcguid@gmail.com>
 
         As imagens devem ser salvas em "./Postfix/imgs/"
 
-7. Executando
+6. Executando
 *************
 
     Modos de execução:
@@ -100,7 +97,7 @@ Copyright (C) 2005-2006 Luiz C. B. Mostaço Guidolin <lcguid@gmail.com>
 
       $ apostilator.pl --preview
 
-8. Exemplos
+7. Exemplos
 ***********
 
     8.1 Limpando arquivos temporários
@@ -128,7 +125,7 @@ Copyright (C) 2005-2006 Luiz C. B. Mostaço Guidolin <lcguid@gmail.com>
 
         $ apostilator.pl --no-open-pdf
 
-9. Para desenvolvedores
+8. Para desenvolvedores
 ***********************
 
          A estrutura de cada projeto é formada por:
@@ -145,6 +142,28 @@ Copyright (C) 2005-2006 Luiz C. B. Mostaço Guidolin <lcguid@gmail.com>
      /.tex/babelbib.sty          -- definições de bibliografia
      /.tex/portuguese.bdf        -- definições de estrutura do LaTeX
 
+
+9. Autor
+********
+    Copyright (C) 2007-2012 Reinaldo de Carvalho <reinaldoc@gmail.com>
+    Copyright (C) 2005-2006 Luiz C. B. Mostaço Guidolin <lcguid@gmail.com>
+
+10. Licença
+***********
+
+        O Apostilator é um software livre; você pode redistribuí-lo e/ou
+    modificá-lo dentro dos termos da GNU LGPL versão 3 como publicada pela
+    Fundação do Software Livre (FSF).
+
+        Este programa é distribuído na esperança que possa ser útil, mas SEM
+    NENHUMA GARANTIA; sem uma garantia implícita de ADEQUAÇÃO a qualquer
+    MERCADO ou APLICAÇÃO EM PARTICULAR. Veja a Licença Pública Geral GNU/LGPL
+    em português para maiores detalhes.
+
+        Você deve ter recebido uma cópia da GNU LGPL versão 3, sob o título
+    "LICENCA.txt", junto com esse programa. Se não, acesse
+    http://www.gnu.org/licenses ou escreva para a Fundação do Software Livre
+    (FSF) Inc., 51 Franklin St, Fifth Floor, Boston, MA 02111-1301, USA.
 
 Fim do README
 *************

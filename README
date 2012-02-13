@@ -1,5 +1,5 @@
-Apostilator - A Latex Interface
-*******************************
+Apostilator Classic - A Latex Interface
+***************************************
 
         Apostilator é uma interface baseada em um processador XML para
     LaTeX que simplifica o processo de escrita de documentos.
@@ -25,64 +25,59 @@ Apostilator - A Latex Interface
 3. Arquitetura
 **************
 
-        O Apostilator é formado pelo executável "apostilator.pl" e o
-    diretório de projeto de cada apostila. O diretório pode ser indicado
-    através da opção "--workdir=" ou deve ser o diretório corrente ($PWD)
-    ao qual o software foi executado. A partir do diretório de um projeto o
-    Apostilator processará arquivos XML simplificados e gerará um arquivo PDF
-    formatado, contendo Capa, Sumário, Capítulos, Bibliografia e Apêndices.
+        O Apostilator é um processador de arquivos .axml "Apostilator-XML",
+    conversor para LaTeX e gerador de PDF. É formado pelo executável
+    "apostilator.pl" e por um diretório para cada projeto de apostila. Um
+    projeto inicial esta disponível em "project-example", e você deve usá-lo
+    como ponto de partida.
 
-        O diretório base para as apostilas esta disponível em "project-example"
-    e é formado obrigatoriamente pelos seguintes arquivos:
-
-     /                           -- diretório do projeto com capítulos em XML
-     /imgs/                      -- diretório com imagens utilizadas nos XMLs
-     /Chapters.lst               -- Lista de arquivos, sem a extensão XML
-     /Appendix.lst               -- Lista de arquivos, sem a extenção XML
-     /Bibliography.bib           -- Bibliografias em formato BibTex
-     /.tex/                      -- diretório para conversões de formatos
-     /.tex/base.tex              -- estrutura básica em LaTeX do documento
-     /.tex/titlepage.tex         -- página de capa utilizada pelo base.tex
-     /.tex/titlepage.png         -- imagem utilizada na capa
-     /.tex/babelbib.sty          -- definições de bibliografia
-     /.tex/portuguese.bdf        -- definições de estrutura do LaTeX
-
-        O nome dos arquivos de capítulos e apêndices indicados respectivamente
-    em /Chapters.lst e em /Appendix.lst não devem possuir a extensão .xml.
-
-        A sintaxe dos capítulos e apêndices devem seguir o padrão
-    "apostilator-XML". A especificação esta contida no manual que pode ser
+        A sintaxe dos capítulos e apêndices devem seguir o padrão AXML
+    "Apostilator-XML". A especificação esta contida no manual que pode ser
      acessado através do projeto "project-manual" do Apostilator.
 
-        A apostila será criada em /Nome-do-projeto.pdf.
+        Crie o diretório do seu projeto copiando o diretório
+    "project-example" disponibilizado, verifique que cada capítulo é formado
+    um arquivo .axml, e a lista de capítulos esta contida no arquivo
+    Chapters.lst. Para adicionar ou remover capítulos, basta criar ou
+    remover os arquivos .axml do diretório do projeto e removê-lo da lista
+    em Chapters.lst. Se seus arquivos iniarem com números você pode utilizar
+    a opção -l para que o apostilator gere o Chapters.lst para você.
 
-4. Documentação do padrão "apostilator-XML"
-*******************************************
+        Para gerar a sua apostila, apenas execute 'apostilator.pl' no
+    diretório corrente ($PWD) ou especifique através da opção "--workdir=".
+    A apostila será gerada em /Nome-do-projeto.pdf.
 
-        A sintaxe dos arquivos XML que formam o projeto esta descrita no
-    manual que foi criada com o apostilator, e esta disponível no projeto
-    "project-manual" distribuido junto com o software.
+4. Padrão "apostilator-XML"
+***************************
 
-        Para acessá-la, basta entrar no diretório deste projeto e
-    processá-lo:
+        A sintaxe dos documentos do projeto esta descrita na Apostila criada
+    com o próprio apostilator no projeto "project-manual".
+
+        Para acessá-la, basta entrar no diretório deste projeto e compilá-la:
 
     $ cd /path/apostilator-version/project-manual
     $ apostilator.pl
-    $ pdfviewer project-manual.pdf
 
-5. O Projeto
+5. Apostilas
 ************
 
-        Para iniciar o projeto de uma nova apostila, copie o "project-example"
-    renomeando para o nome do novo projeto:
+        Para iniciar um projeto chamado "Postfix" de uma nova apostila, copie
+    o diretório "project-example" renomeando, como o exemplo abaixo:
 
-        # cp -a project-example /home/rei/Projetos-Apostilator/Postfix
+        # cp -a /path/to/project-example /home/rei/Projetos-AXML/Postfix
 
-        Adicione os capítulos em formato XML no diretório do projeto (ex:
-    "./Postfix/Capitulo01.xml" e inclua o nome deste arquivo sem a extenção
-    .xml no arquivo "./Postfix/Chapters.lst"
+        Adicione os capítulos em formato AXML no diretório (ex:
+    "./Postfix/Capitulo01.axml" e inclua esta arquivo .axml em
+    "./Postfix/Chapters.lst".
 
-        As imagens devem ser salvas em: "./Postfix/imgs/"
+        Caso seus arquivos de capítulos .axml começem por números de 1 a 8
+    como "01_introducao.axml" ou "23_diversos.axml", e apêndices comecem por
+    9 como "91_GPL.axml", o comando 'apostilator.pl -l' gerará a lista
+    ordenada em Chapters.lst e Appendix.lst. Não use a opção '-l' caso seus
+    arquivos não sigam este padrão pois os arquivos Chapters.lst e
+    Appendix.lst serão removidos.
+
+        As imagens devem ser salvas em "./Postfix/imgs/"
 
 6. Executando
 *************
@@ -98,45 +93,63 @@ Apostilator - A Latex Interface
       $ apostilator.pl --skip-pdf --set-tile="Postfix para tráfego intenso"
       $ apostilator.pl --skip-pdf --set-author="Reinaldo Gil Lima de Carvalho"
 
-    Para processar rapidamente o projeto (sem atualizar sumário e bibliografia):
+    Para compilar somente os capítulos (sem atualizar sumário e bibliografia):
 
       $ apostilator.pl --preview
 
 7. Exemplos
 ***********
 
-    7.1 Limpando arquivos temporários
+    8.1 Limpando arquivos temporários
     *********************************
         $ apostilator.pl --workdir=/home/rei/apostilator-openldap --clean
 
-    7.2 Efetuando backup
+    8.2 Efetuando backup
     ********************
         $ apostilator.pl --workdir=/home/rei/apostilator-bs7799 --backup
 
-    7.3 Atualizar rapidamente (sem atualizar indíces e bibliografia)
+    8.3 Atualizar rapidamente (sem atualizar indíces e bibliografia)
     ****************************************************************
         $ apostilator.pl --workdir=/home/rei/Apostila-Postfix --preview
 
-    7.4 Usando o --workdir ou dentro do projeto
+    8.4 Usando o --workdir ou dentro do projeto
     *******************************************
-        $ apostilator.pl --workdir=/home/rei/Apostila-Postfix [ OPCAO ]
+        $ apostilator.pl --workdir=/home/rei/Apostila-Postfix
 
         $ cd /home/rei/Apostila-Postfix
-        $ apostilator.pl [ OPCAO ]
+        $ apostilator.pl
 
-    7.5 Processar o prjeto, sem iniciar visualizador de PDF
-    *******************************************************
+    8.5 Compilar prjeto, sem iniciar visualizador de PDF
+    ****************************************************
         $ apostilator.pl --workdir=/home/rei/Apostila-Postfix --no-open-pdf
 
         $ apostilator.pl --no-open-pdf
 
-8. Autor
+8. Para desenvolvedores
+***********************
+
+         A estrutura de cada projeto é formada por:
+
+     /                           -- diretório repositório de arquivos .axml
+     /imgs/                      -- diretório com imagens utilizadas nos aXMLs
+     /Chapters.lst               -- Lista de arquivos .axml
+     /Appendix.lst               -- Lista de arquivos .axml
+     /Bibliography.bib           -- Bibliografias em formato BibTex
+     /.tex/                      -- diretório para conversões de formatos
+     /.tex/base.tex              -- estrutura básica em LaTeX do documento
+     /.tex/titlepage.tex         -- página de capa utilizada pelo base.tex
+     /.tex/titlepage.png         -- imagem utilizada na capa
+     /.tex/babelbib.sty          -- definições de bibliografia
+     /.tex/portuguese.bdf        -- definições de estrutura do LaTeX
+
+
+9. Autor
 ********
-    Copyright (C) 2007-2011 Reinaldo de Carvalho <reinaldoc@gmail.com>
+    Copyright (C) 2007-2012 Reinaldo de Carvalho <reinaldoc@gmail.com>
     Copyright (C) 2005-2006 Luiz C. B. Mostaço Guidolin <lcguid@gmail.com>
 
-9. Licença
-**********
+10. Licença
+***********
 
         O Apostilator é um software livre; você pode redistribuí-lo e/ou
     modificá-lo dentro dos termos da GNU LGPL versão 3 como publicada pela

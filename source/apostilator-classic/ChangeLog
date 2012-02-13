@@ -1,7 +1,7 @@
 
-20120119:
+20120119 (v0.3 released):
 - Requerida extensão .axml nos arquivos do projeto.
-- Listagem de arquivos Chapters.lst e Appendix.lst devem cnoter a extensão do arquivo.
+- Listagem de arquivos Chapters.lst e Appendix.lst devem conter a extensão .axml.
 - Métodos revisados para diretório do projeto contendo espaços.
 - Implementação adequada da opção para gerar lista de chapters/appendix:
     -l ,    --make-lst             Make chapters/appendix list sorted by name.
@@ -9,8 +9,8 @@
     -j=,    --set-header=          Set page header*.
     -f=,    --set-footer=          Set page footer*.
     -x=,    --set-chapter-footer=  Set chapter page footer*.
+- Atualização do README.
   * Reinaldo de Carvalho <reinaldoc@gmail.com> 
-
 
 20100617:
 - Remoção do diretório .tex/titlepage-imgs, nomeando a figura da capa para titlepage.png.
