@@ -1,24 +1,31 @@
-<capitulo>Exemplo de capítulo</capitulo>
+﻿<capitulo>Servidor de E-mails - Postfix</capitulo>
 
 	Introdução ao capítulo de exemplo.
 	Exemplo de bibliografia: <citar>Test1</citar>
 
-<subsecao>Exemplo de seção</subsecao>
+<subsecao>Introdução</subsecao>
 
-	Introdução a seção de exemplo.
+	O correio eletrônico é um dos serviços mais utilizados na Internet, e cada vez mais pessoas e empresas utilizam-no para trocar informações de maneira rápida e eficiente.
+
+	Neste tutorial será visto como funciona e como implementar um serviço de correio eletrônico. Será visto também como implementar um <b>webmail</b> (um serviço que permite que os usuários acessem as suas mensagens através de um navegador Internet), como criar filtros para barrar mensagens não solicitadas, etc.
+
 	Exemplo de bibliografia: <citar>Test2</citar>
 
-<subsubsecao>Exemplo de subseção</subsubsecao>
+<subsecao>Funcionamento do Correio Eletrônico</subsecao>
 
-	Introdução a subseção de exemplo.
+	Antes de implementar um serviço de correio eletrônico é importante que o administrador entenda como funciona a troca de mensagens, seja na Internet, seja em uma rede local. Para uma simples troca de mensagens entre dois usuários, pode ser necessária a utilização de vários protocolos e de várias aplicações.<quebradelinha>
+	
+	Um usuário que queira enviar uma mensagem para outro utilizará um aplicativo cliente de e-mail, também conhecido como <b>MUA</b>, ou <b>Agente de Mensagens do Usuário</b>. Ao terminar de redigir a sua mensagem o <b>MUA</b> enviará a mensagem a um <b>MTA (Agente Transportador de Mensagens)</b> que se encarregará então de entregar a mensagem ao <b>MTA</b> do destinatário, caso ele se encontre em outra máquina ou simplesmente colocar a mensagem na caixa postal do destinatário, caso ele se encontre no mesmo servidor.
+	
+	A transferência da mensagem entre o <b>MUA</b> e o <b>MTA</b> se efetua utilizando-se um protocolo chamado <b>SMTP</b>, ou <b>Protocolo Simples de Transferência de Mensagens</b>. O protocolo <b>SMTP</b> será utilizado também entre o <b>MTA</b> do remetente e o <b>MTA</b> do destinatário.
 
-<subsubsecao>Exemplo de subseção</subsubsecao>
+	O servidor de <b>e-mail</b> do destinatário, ao receber uma mensagem para um dos seus usuários, simplesmente a coloca na caixa postal deste usuário.
 
-	Introdução a subseção de exemplo.
+	Se o usuário possui uma conta <b>shell</b> neste servidor ele poderá ler os seus <b>e-mails</b> direto no servidor, caso contrário o usuário deverá transferir suas mensagens para sua máquina a fim de lê-las com o seu cliente de <b>e-mail</b>. A transferência de mensagens recebidas entre o servidor e o cliente de <b>e-mail</b> requer a utilização de outros programas e protocolos. Usualmente é utilizado para este fim o protocolo <b>POP</b>, Protocolo de "Agência" de Correio, que recebe este nome por agir como uma agência de correios mesmo, que guarda as mensagens dos usuários em caixas postais e aguarda que estes venham buscar suas mensagens. Outro protocolo que pode ser utilizado para este mesmo fim é o <b>IMAP</b>, <b>Protocolo para Acesso de Mensagens via Internet</b>, que implementa além das funcionalidades fornecidas pelo <b>POP</b> muitos outros recursos. Os protocolos <b>POP</b> e <b>IMAP</b> são protocolos para recebimentos de mensagens, ao contrário do protocolo <b>SMTP</b> que serve para enviar mensagens, logo, possuem funcionalidades diferenciadas, como, por exemplo, autenticação do usuário.
 
-<subsecao>Exemplo de segunda seção</subsecao>
+	Para a utilização dos protocolos <b>POP</b> e <b>IMAP</b> é necessário a instalação do servidor apropriado, que vai ser o responsável por atender as solicitações do cliente de <b>e-mail</b> por novas mensagens.
 
-	Introdução a segunda seção de exemplo.
+	O recebimento de mensagens pelo cliente se dá através da solicitação do <b>MUA</b> do usuário ao seu servidor de <b>e-mail</b>, que após a autenticação do usuário vai informar se existem mensagens em sua caixa postal e quantas são. A seguir o <b>MUA</b> solicita a transferência das mensagens para a máquina local, finalizando assim o processo de troca de mensagens entre dois usuários.
 
 	Exemplo de comando:
 
